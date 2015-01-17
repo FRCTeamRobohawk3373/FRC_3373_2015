@@ -5,10 +5,12 @@ package org.usfirst.frc.team3373.robot;
 import com.kauailabs.nav6.frc.IMU; 
 import com.kauailabs.nav6.frc.IMUAdvanced;
 
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -32,7 +34,8 @@ public class Robot extends SampleRobot {
     SuperJoystick stick1;
     SuperJoystick stick2;
     Indexer indexer;
-    
+    Servo servo;
+    CANTalon talon;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -52,6 +55,10 @@ public class Robot extends SampleRobot {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
+        servo = new Servo(2);
+        talon = new CANTalon (0);
+        talon.changeControlMode(CANTalon.ControlMode.Speed);
+        talon.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
         
         try {
         	serial_port = new SerialPort(57600,SerialPort.Port.kMXP);
@@ -122,7 +129,16 @@ public class Robot extends SampleRobot {
             SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
             
+            if (imu.getYaw() > 0) {
+            		servo.setAngle(imu.getYaw());
+            } else if (imu.getYaw() < 0){
+            	servo.setAngle(360+imu.getYaw());
+            }
+            
+            SmartDashboard.putNumber("Servo Angle", servo.getAngle());
+            SmartDashboard.putNumber("Pot", talon.get());
             Timer.delay(.01);
+            talon.set(talon.get()/5);
     	}
     }
 }
