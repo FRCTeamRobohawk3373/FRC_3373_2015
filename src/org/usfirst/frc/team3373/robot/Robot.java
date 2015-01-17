@@ -24,13 +24,22 @@ import edu.wpi.first.wpilibj.Timer;
  * this system. Use IterativeRobot or Command-Based instead if you're new.
  */
 public class Robot extends SampleRobot {
-    RobotDrive myRobot;
-    Joystick stick;
-
+    SuperJoystick stick1;
+    SuperJoystick stick2;
+    Indexer indexer;
+    
+    //Joystick Axes
+    int LX = 1;
+    int LY = 2;
+    int triggers = 3;
+    int RX = 4;
+    int RY = 5;
+    int DP = 6;
+    
     public Robot() {
-        myRobot = new RobotDrive(0, 1);
-        myRobot.setExpiration(0.1);
-        stick = new Joystick(0);
+        stick1 = new SuperJoystick(0);
+        stick2 = new SuperJoystick(1);
+        indexer = new Indexer();
     }
 
     /**
@@ -44,9 +53,7 @@ public class Robot extends SampleRobot {
      * Runs the motors with arcade steering.
      */
     public void operatorControl() {
-        myRobot.setSafetyEnabled(true);
         while (isOperatorControl() && isEnabled()) {
-            myRobot.arcadeDrive(stick); // drive with arcade style (use right stick)
             Timer.delay(0.005);		// wait for a motor update time
         }
     }
@@ -55,5 +62,8 @@ public class Robot extends SampleRobot {
      * Runs during test mode
      */
     public void test() {
+    	while (isTest() && isEnabled()){
+    		indexer.indexControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
+    	}
     }
 }
