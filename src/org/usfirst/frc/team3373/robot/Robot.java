@@ -2,10 +2,15 @@
 package org.usfirst.frc.team3373.robot;
 
 
+import com.kauailabs.nav6.frc.IMU; 
+import com.kauailabs.nav6.frc.IMUAdvanced;
+
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This is a demo program showing the use of the RobotDrive class.
@@ -28,18 +33,44 @@ public class Robot extends SampleRobot {
     SuperJoystick stick2;
     Indexer indexer;
     
+    
+    SerialPort serial_port;
+    //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
+    IMUAdvanced imu;
+    
     //Joystick Axes
-    int LX = 1;
-    int LY = 2;
-    int triggers = 3;
+    int LX = 0;
+    int LY = 1;
+    int Ltrigger = 2;
+    int Rtrigger = 3;
     int RX = 4;
     int RY = 5;
-    int DP = 6;
+    
+    boolean first_iteration;
     
     public Robot() {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
+        
+        try {
+        	serial_port = new SerialPort(57600,SerialPort.Port.kMXP);
+    		
+    		// You can add a second parameter to modify the 
+    		// update rate (in hz) from 4 to 100.  The default is 100.
+    		// If you need to minimize CPU load, you can set it to a
+    		// lower value, as shown here, depending upon your needs.
+    		
+    		// You can also use the IMUAdvanced class for advanced
+    		// features.
+    		
+    		byte update_rate_hz = 50;
+    		//imu = new IMU(serial_port,update_rate_hz);
+    		imu = new IMUAdvanced(serial_port,update_rate_hz);
+        	} catch( Exception ex ) {
+        		
+        	}
+        first_iteration = true;
     }
 
     /**
@@ -63,7 +94,35 @@ public class Robot extends SampleRobot {
      */
     public void test() {
     	while (isTest() && isEnabled()){
-    		indexer.indexControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
+    		indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
+    		//System.out.println("POV" + stick1.getPOV());
+    		
+            boolean is_calibrating = imu.isCalibrating();
+            if ( first_iteration && !is_calibrating ) {
+                Timer.delay( 0.3 );
+                imu.zeroYaw();
+                first_iteration = false;
+            }
+    		
+            SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
+            SmartDashboard.putBoolean(  "IMU_IsCalibrating",    imu.isCalibrating());
+            SmartDashboard.putNumber(   "IMU_Yaw",              imu.getYaw());
+            SmartDashboard.putNumber(   "IMU_Pitch",            imu.getPitch());
+            SmartDashboard.putNumber(   "IMU_Roll",             imu.getRoll());
+            SmartDashboard.putNumber(   "IMU_CompassHeading",   imu.getCompassHeading());
+            SmartDashboard.putNumber(   "IMU_Update_Count",     imu.getUpdateCount());
+            SmartDashboard.putNumber(   "IMU_Byte_Count",       imu.getByteCount());
+
+            // If you are using the IMUAdvanced class, you can also access the following
+            // additional functions, at the expense of some extra processing
+            // that occurs on the CRio processor
+            
+            SmartDashboard.putNumber(   "IMU_Accel_X",          imu.getWorldLinearAccelX());
+            SmartDashboard.putNumber(   "IMU_Accel_Y",          imu.getWorldLinearAccelY());
+            SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
+            SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
+            
+            Timer.delay(.01);
     	}
     }
 }
