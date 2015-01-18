@@ -60,7 +60,7 @@ public class Robot extends SampleRobot {
         servo = new Servo(2);
         rotateTalon = new Talon(0);
         driveTalon = new CANTalon (0);
-        driveTalon.changeControlMode(CANTalon.ControlMode.Position);
+        //driveTalon.changeControlMode(CANTalon.ControlMode.Position);
         driveTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 
         
@@ -142,8 +142,13 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber("Servo Angle", servo.getAngle());
             double talonPosition = driveTalon.getEncPosition();
             SmartDashboard.putNumber("Pot", talonPosition);
-            //driveTalon.set(1);
-           
+            if (stick1.isXHeld()){
+            	driveTalon.set(.5);
+            } else if (stick1.isYHeld()){
+            	driveTalon.set(-.5);
+            } else {
+            	driveTalon.set(0);
+            }
             //rotateTalon.set(.3);
             Timer.delay(.01);
             //talon.set(talonPosition/1023);
@@ -162,7 +167,12 @@ public class Robot extends SampleRobot {
     
     public int returnAngle(int encoderValue){
     	System.out.println("Encoder Value: " + encoderValue);
-    	int angle = (int)(encoderValue * (360.0/1652)) % 360;
+    	int angle = 0;
+    	if (encoderValue >= 0){
+    		angle = (int)(encoderValue * (360.0/1652)) % 360;
+    	} else if (encoderValue < 0){
+    		angle = 360 - (int)(encoderValue * (360.0/1652)) % 360;
+    	}
     	System.out.println(angle);
     	return angle;
     }
