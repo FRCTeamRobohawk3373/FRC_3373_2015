@@ -18,5 +18,10 @@ public class SwerveControl  {
 		
 		}
 	}
+	
+	public double getAngle(AnalogInput encoder){
+		double angle = 0;
+		return angle;
+	}
 }
 
