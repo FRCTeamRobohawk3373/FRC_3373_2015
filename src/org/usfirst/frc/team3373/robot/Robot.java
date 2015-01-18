@@ -57,8 +57,9 @@ public class Robot extends SampleRobot {
         indexer = new Indexer();
         servo = new Servo(2);
         talon = new CANTalon (0);
-        talon.changeControlMode(CANTalon.ControlMode.Speed);
+        talon.changeControlMode(CANTalon.ControlMode.Position);
         talon.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
+
         
         try {
         	serial_port = new SerialPort(57600,SerialPort.Port.kMXP);
@@ -130,15 +131,16 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
             
             if (imu.getYaw() > 0) {
-            		servo.setAngle(imu.getYaw());
+            		servo.setAngle(imu.getYaw()/2);
             } else if (imu.getYaw() < 0){
-            	servo.setAngle(360+imu.getYaw());
+            	servo.setAngle(180+imu.getYaw()/2);
             }
             
             SmartDashboard.putNumber("Servo Angle", servo.getAngle());
-            SmartDashboard.putNumber("Pot", talon.get());
+            double talonPosition = talon.get();
+            SmartDashboard.putNumber("Pot", talonPosition);
             Timer.delay(.01);
-            talon.set(talon.get()/5);
+            //talon.set(talonPosition/1023);
     	}
     }
 }
