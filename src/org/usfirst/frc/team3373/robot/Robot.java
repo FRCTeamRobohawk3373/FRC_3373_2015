@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -35,7 +36,8 @@ public class Robot extends SampleRobot {
     SuperJoystick stick2;
     Indexer indexer;
     Servo servo;
-    CANTalon talon;
+    CANTalon driveTalon;
+    Talon rotateTalon;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -56,9 +58,10 @@ public class Robot extends SampleRobot {
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
         servo = new Servo(2);
-        talon = new CANTalon (0);
-        talon.changeControlMode(CANTalon.ControlMode.Position);
-        talon.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
+        rotateTalon = new Talon(0);
+        driveTalon = new CANTalon (0);
+        driveTalon.changeControlMode(CANTalon.ControlMode.Position);
+        driveTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 
         
         try {
@@ -137,10 +140,15 @@ public class Robot extends SampleRobot {
             }
             
             SmartDashboard.putNumber("Servo Angle", servo.getAngle());
-            double talonPosition = talon.get();
+            double talonPosition = driveTalon.getEncPosition();
             SmartDashboard.putNumber("Pot", talonPosition);
+            //driveTalon.set(1);
+           
+            //rotateTalon.set(.3);
             Timer.delay(.01);
             //talon.set(talonPosition/1023);
+            
+            
     	}
     }
 }
