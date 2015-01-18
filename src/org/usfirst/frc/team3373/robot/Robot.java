@@ -147,8 +147,23 @@ public class Robot extends SampleRobot {
             //rotateTalon.set(.3);
             Timer.delay(.01);
             //talon.set(talonPosition/1023);
+            if (stick1.isAHeld()){
+            	rotateTalon.set(.15);
+            } else if (stick1.isBHeld()){
+            	rotateTalon.set(-.15);
+            } else {
+            	rotateTalon.set(0);
+            }
+            SmartDashboard.putNumber("Angle: ", returnAngle(driveTalon.getEncPosition()));
             
             
     	}
+    }
+    
+    public int returnAngle(int encoderValue){
+    	System.out.println("Encoder Value: " + encoderValue);
+    	int angle = (int)(encoderValue * (360.0/1652)) % 360;
+    	System.out.println(angle);
+    	return angle;
     }
 }
