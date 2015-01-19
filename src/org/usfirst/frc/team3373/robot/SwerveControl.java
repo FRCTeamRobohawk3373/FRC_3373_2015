@@ -9,19 +9,36 @@ import edu.wpi.first.wpilibj.TalonSRX;
 
 public class SwerveControl  {
 	
-	public SwerveControl(int frontLeftDriveID, int frontLeftRotateChannel, int frontRightDriveID, int frontRightRotateChannel, int backLeftDriveID, int backLeftRotateChannel, int backRightDriveID, int backRightRotateChannel){
+	Talon driveLFMotor;
+	CANTalon rotateLFMotor;
+	//Front Right Wheel
+	Talon driveRFMotor;
+	CANTalon rotateRFMotor;
+	//Back Left Wheel
+	Talon driveLBMotor;
+	CANTalon rotateLBMotor;
+	//Back Right Wheel
+	Talon driveRBMotor;
+	CANTalon rotateRBMotor;
+	
+	int encoderUnitsPerRotation = 1734;
+	
+	public SwerveControl(int frontLeftDriveChannel, int frontLeftRotateID, int frontRightDriveChannel, int frontRightRotateID, int backLeftDriveChannel, int backLeftRotateID, int backRightDriveChannel, int backRightRotateID){
 		//Front Left Wheel
-		CANTalon driveLFMotor = new CANTalon(frontLeftDriveID);
-		Talon rotateLFMotor = new Talon(frontLeftRotateChannel);
+		driveLFMotor = new Talon(frontLeftDriveChannel);
+		rotateLFMotor = new CANTalon(frontLeftRotateID);
 		//Front Right Wheel
-		CANTalon driveRFMotor = new CANTalon(frontRightDriveID);
-		Talon rotateRFMotor = new Talon(frontRightRotateChannel);		
+		driveRFMotor = new Talon(frontRightDriveChannel);
+		rotateRFMotor = new CANTalon(frontRightRotateID);		
 		//Back Left Wheel
-		CANTalon driveLBMotor = new CANTalon(backLeftDriveID);
-		Talon rotateLBMotor = new Talon(backLeftRotateChannel);
+		driveLBMotor = new Talon(backLeftDriveChannel);
+		rotateLBMotor = new CANTalon(backLeftRotateID);
 		//Back Right Wheel
-		CANTalon driveRBMotor = new CANTalon(backRightDriveID);
-		Talon rotateRBMotor = new Talon(backRightRotateChannel);
+		driveRBMotor = new Talon(backRightDriveChannel);
+		rotateRBMotor = new CANTalon(backRightRotateID);
+		
+        rotateLFMotor.changeControlMode(CANTalon.ControlMode.Position);
+        rotateLFMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 	}
 	
 	double deltaTheta;
@@ -46,39 +63,63 @@ public class SwerveControl  {
 		}
 	}
 	
+    public int encoderUnitToAngle(int encoderValue){
+    	System.out.println("Encoder Value: " + encoderValue);
+    	int angle = 0;
+    	if (encoderValue >= 0){
+    		angle = (int)(encoderValue * (360.0/encoderUnitsPerRotation)) % 360;
+    	} else if (encoderValue < 0){
+    		angle = 360 - (int)(encoderValue * (360.0/encoderUnitsPerRotation)) % 360;
+    	}
+    	System.out.println(angle);
+    	return angle;
+    }	
+	
+    public int angleToEncoderUnit(int angle){//Only pass in deltaTheta
+    	
+    	int deltaEncoder;
+    	deltaEncoder = angle*(int)(encoderUnitsPerRotation/360.0); 
+    	
+    	return deltaEncoder;
+    }
+    
 	public void move(double LY, double LX, double RX){//input the target angle position for wheel, current position of wheel, Talon for the rotating motor, CANTalon for drive motor
 		double radians;
-		double theta;
+		double targetTheta;
+		double deltaTheta;
+		double magnitude;
 		
-		if(LX < 0){
-			radians = Math.atan2(LY, LX);
-			theta = Math.toDegrees(radians);
-			theta = theta + 2*(90-theta);
-		} else{
-			radians = Math.atan2(LY, LX);
-			theta = Math.toDegrees(radians);
-			if(theta < 0){ //If the angle is negative, add 360 to get a positive equivalent value
-				theta += 360;
-			}
+		//double deltaThetaLF;
+		//double deltaThetaLB;
+		//double deltaThetaRF;
+		//double deltaThetaRB;
+		
+		radians = Math.atan2(LY, LX);
+		targetTheta = Math.toDegrees(radians);
+		
+		if(targetTheta < 0){
+			targetTheta += 360; //Get a positive equivalent angle
 		}
 		
-		pid.enable();
-		pid.setInputRange(0, 359);
-		pid.setOutputRange(-1, 1);
-		pid.setPercentTolerance(0.1);		
+		magnitude = Math.sqrt(LX*LX + LY*LY);
 		
+		deltaTheta = calculateTargetDeltaTheta((int)targetTheta, encoderUnitToAngle(rotateLFMotor.getEncPosition()));
 		
-		pid.setSetpoint(theta);
-		pid.getError();
+
+        
+        rotateLFMotor.set(rotateLFMotor.getEncPosition() + angleToEncoderUnit((int)deltaTheta));
+        if (deltaTheta > 0){
+        	driveLFMotor.set(magnitude);
+        } else if (deltaTheta < 0){
+        	driveLFMotor.set(-magnitude);
+        }
+		
 		
 	
 	}
+	
 
-	/*
-	public int encoderValueToAngle(int encoderValue){//input value of encoder and get an angle based off that
-		
-		//DO math here
-		return angle;
-	}*/
+	
+   
 }
 
