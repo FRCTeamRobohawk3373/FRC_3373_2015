@@ -5,7 +5,9 @@ package org.usfirst.frc.team3373.robot;
 import com.kauailabs.nav6.frc.IMU; 
 import com.kauailabs.nav6.frc.IMUAdvanced;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Joystick;
@@ -38,6 +40,7 @@ public class Robot extends SampleRobot {
     Servo servo;
     CANTalon driveTalon;
     Talon rotateTalon;
+    PIDController pid;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -53,15 +56,41 @@ public class Robot extends SampleRobot {
     
     boolean first_iteration;
     
+    double proportionalConstant = 0.5;
+    double derivativeConstant = 0.5;
+    double integralConstant = 0.5;
+    
+    double p = 35; //100 is very close
+    double i = 0;
+    double d = 0;
+    double f = 0;
+    int izone = 100;
+    double ramprate = 36;
+    int profile = 0;
+    int drivePos = 1;
+    
+    
+    
     public Robot() {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
         servo = new Servo(2);
-        rotateTalon = new Talon(0);
+
         driveTalon = new CANTalon (0);
-        //driveTalon.changeControlMode(CANTalon.ControlMode.Position);
+
+        
+        AnalogInput pot = new AnalogInput(0);
+        
+        rotateTalon = new Talon(0);
+        driveTalon.setPID(p,i,d);
+        pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
+        
+        
+        
+        driveTalon.changeControlMode(CANTalon.ControlMode.Position);
         driveTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        drivePos = driveTalon.getEncPosition();
 
         
         try {
@@ -95,8 +124,17 @@ public class Robot extends SampleRobot {
      * Runs the motors with arcade steering.
      */
     public void operatorControl() {
-        while (isOperatorControl() && isEnabled()) {
-            Timer.delay(0.005);		// wait for a motor update time
+        
+    	while (isOperatorControl() && isEnabled()) {
+            
+    		pid.enable();
+    		pid.setInputRange(0, 5);
+        	pid.setOutputRange(-1, 1);
+        	pid.setSetpoint(2.5);
+        	
+        	SmartDashboard.putNumber("PIDError", pid.getError());
+    		
+    		//Timer.delay(0.005);		// wait for a motor update time
         }
     }
 
@@ -146,22 +184,24 @@ public class Robot extends SampleRobot {
             	driveTalon.set(.5);
             } else if (stick1.isYHeld()){
             	driveTalon.set(-.5);
-            } else {
-            	driveTalon.set(0);
             }
+            
+            //driveTalon.set(drivePos);
             //rotateTalon.set(.3);
             Timer.delay(.01);
             //talon.set(talonPosition/1023);
-            if (stick1.isAHeld()){
-            	rotateTalon.set(.15);
-            } else if (stick1.isBHeld()){
-            	rotateTalon.set(-.15);
-            } else {
-            	rotateTalon.set(0);
+            if (stick1.isAPushed()){
+            	drivePos += 1753/4;
+            } else if (stick1.isBPushed()){
+            	drivePos -= 1752/4;
             }
+            driveTalon.set(drivePos);
             SmartDashboard.putNumber("Angle: ", returnAngle(driveTalon.getEncPosition()));
-            
-            
+            SmartDashboard.putNumber("Drive Target", drivePos);
+            SmartDashboard.putNumber("OutPut Current ", driveTalon.getOutputCurrent());
+            SmartDashboard.putNumber("OutPut Voltage ", driveTalon.getOutputVoltage());
+            stick1.clearButtons();
+            stick2.clearButtons();
     	}
     }
     
