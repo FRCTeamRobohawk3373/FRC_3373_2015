@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TalonSRX;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveControl  {
 	
@@ -21,7 +22,18 @@ public class SwerveControl  {
 	Talon driveRBMotor;
 	CANTalon rotateRBMotor;
 	
-	int encoderUnitsPerRotation = 1734;
+	int encoderUnitsPerRotation = 1665;
+	
+    double p = 10; //100 is very close
+    double i = 0;
+    double d = 0;
+    double f = 0;
+    int izone = 100;
+    double ramprate = 36;
+    int profile = 0;
+    int drivePos = 1;
+	double targetTheta;
+
 	
 	public SwerveControl(int frontLeftDriveChannel, int frontLeftRotateID, int frontRightDriveChannel, int frontRightRotateID, int backLeftDriveChannel, int backLeftRotateID, int backRightDriveChannel, int backRightRotateID){
 		//Front Left Wheel
@@ -36,9 +48,11 @@ public class SwerveControl  {
 		//Back Right Wheel
 		driveRBMotor = new Talon(backRightDriveChannel);
 		rotateRBMotor = new CANTalon(backRightRotateID);
-		
+        
+		rotateLFMotor.setPID(p,i,d);
         rotateLFMotor.changeControlMode(CANTalon.ControlMode.Position);
         rotateLFMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        targetTheta = rotateLFMotor.getEncPosition();
 	}
 	
 	double deltaTheta;
@@ -47,31 +61,65 @@ public class SwerveControl  {
 	double derivativeConstant = 0;
 	double integralConstant = 0;
 	
-	Talon testMotor = new Talon(9);
-	AnalogInput testPot = new AnalogInput(9);
-	
-	PIDController pid = new PIDController(proprtionalConstant, derivativeConstant, integralConstant, testPot, testMotor);
 	
 	public double calculateTargetDeltaTheta(int targetAngle, int currentAngle){
-		double deltaThetaOne = Math.abs(targetAngle - currentAngle);
-		double deltaThetaTwo = Math.abs(targetAngle - currentAngle - 180);
+		double deltaThetaOne; 
+		double deltaThetaTwo; 
+		double deltaThetaOne360;
+		double deltaThetaTwo360;
+		double deltaThetaOneTarget;
+		double deltaThetaTwoTarget;
 		
-		if (deltaThetaOne <= deltaThetaTwo){
-			return deltaThetaOne;//if we get here DeltaTheta must be <= 90
+		if (currentAngle == 0){
+			deltaThetaOneTarget = Math.abs(targetAngle - 360);
+			deltaThetaTwoTarget = Math.abs(targetAngle - 540);
 		} else {
-			return -deltaThetaTwo;//if we get here DeltaTheta must be <= 90
+			deltaThetaOneTarget = 1000;
+			deltaThetaTwoTarget = 1000;
 		}
+		
+		if (targetAngle == 0){
+			deltaThetaOne360 = Math.abs(360-currentAngle);
+			deltaThetaTwo360 = Math.abs(360 - currentAngle - 180);
+		} else {
+			deltaThetaOne360 = 1000;
+			deltaThetaTwo360 = 1000;
+		}
+
+
+		deltaThetaOne = Math.abs(targetAngle - currentAngle);
+		deltaThetaTwo = Math.abs(targetAngle - currentAngle - 180);
+		
+		SmartDashboard.putNumber("DeltaThetaOne: ", deltaThetaOne);
+		SmartDashboard.putNumber("DeltaThetaTwo: ", deltaThetaTwo);
+		SmartDashboard.putNumber("DeltaThetaOne360: ", deltaThetaOne360);
+		SmartDashboard.putNumber("DeltaThetaTwo360: ", deltaThetaTwo360);
+		SmartDashboard.putNumber("DeltaThetaOneTarget: ", deltaThetaOneTarget);
+		SmartDashboard.putNumber("DeltaThetaTwoTarget: ", deltaThetaTwoTarget);
+		
+		if (deltaThetaOne <= 90){
+			return -deltaThetaOne;//if we get here DeltaTheta must be <= 90
+		} else if (deltaThetaTwo <= 90){
+			return deltaThetaTwo;//if we get here DeltaTheta must be <= 90
+		} else if (deltaThetaOne360 <= 90){
+			return -deltaThetaOne360;
+		} else if (deltaThetaTwo360 <= 90){
+			return deltaThetaTwo360;
+		} else if (deltaThetaOneTarget <= 90){
+			return -deltaThetaOneTarget;
+		} else if (deltaThetaTwoTarget <= 90){
+			return deltaThetaTwoTarget;
+		} else return 0;
+		
 	}
 	
     public int encoderUnitToAngle(int encoderValue){
-    	System.out.println("Encoder Value: " + encoderValue);
     	int angle = 0;
     	if (encoderValue >= 0){
-    		angle = (int)(encoderValue * (360.0/encoderUnitsPerRotation)) % 360;
+    		angle = (int)((encoderValue * (360.0/encoderUnitsPerRotation)) % 360);
     	} else if (encoderValue < 0){
-    		angle = 360 - (int)(encoderValue * (360.0/encoderUnitsPerRotation)) % 360;
+    		angle = 360 - (int)((encoderValue * (360.0/encoderUnitsPerRotation)) % 360);
     	}
-    	System.out.println(angle);
     	return angle;
     }	
 	
@@ -85,7 +133,6 @@ public class SwerveControl  {
     
 	public void move(double LY, double LX, double RX){//input the target angle position for wheel, current position of wheel, Talon for the rotating motor, CANTalon for drive motor
 		double radians;
-		double targetTheta;
 		double deltaTheta;
 		double magnitude;
 		
@@ -104,16 +151,20 @@ public class SwerveControl  {
 		magnitude = Math.sqrt(LX*LX + LY*LY);
 		
 		deltaTheta = calculateTargetDeltaTheta((int)targetTheta, encoderUnitToAngle(rotateLFMotor.getEncPosition()));
-		
 
         
         rotateLFMotor.set(rotateLFMotor.getEncPosition() + angleToEncoderUnit((int)deltaTheta));
-        if (deltaTheta > 0){
+        /*if (deltaTheta > 0){
         	driveLFMotor.set(magnitude);
         } else if (deltaTheta < 0){
         	driveLFMotor.set(-magnitude);
-        }
+        }*/
 		
+		SmartDashboard.putNumber("Target Angle: ", (int)targetTheta);
+		SmartDashboard.putNumber("Delta Theta: ", deltaTheta);
+		SmartDashboard.putNumber("Target Change", rotateLFMotor.getEncPosition() + angleToEncoderUnit((int)deltaTheta));
+        SmartDashboard.putNumber("Current Encoder", rotateLFMotor.getEncPosition());
+        SmartDashboard.putNumber("Current Angle", encoderUnitToAngle(rotateLFMotor.getEncPosition()));
 		
 	
 	}

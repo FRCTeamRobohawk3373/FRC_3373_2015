@@ -41,6 +41,8 @@ public class Robot extends SampleRobot {
     CANTalon driveTalon;
     Talon rotateTalon;
     PIDController pid;
+    SwerveControl swerve;
+    Deadband deadband;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -75,22 +77,24 @@ public class Robot extends SampleRobot {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
-        servo = new Servo(2);
+        //servo = new Servo(2);
+        swerve = new SwerveControl(0, 0, 1, 1, 2, 2, 3, 3);
+        deadband = new Deadband();
 
-        driveTalon = new CANTalon (0);
+        //driveTalon = new CANTalon (0);
 
         
         AnalogInput pot = new AnalogInput(0);
         
-        rotateTalon = new Talon(0);
-        driveTalon.setPID(p,i,d);
-        pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
+        //rotateTalon = new Talon(0);
+        //driveTalon.setPID(p,i,d);
+        //pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
         
         
         
-        driveTalon.changeControlMode(CANTalon.ControlMode.Position);
+        /*driveTalon.changeControlMode(CANTalon.ControlMode.Position);
         driveTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        drivePos = driveTalon.getEncPosition();
+        drivePos = driveTalon.getEncPosition();*/
 
         
         try {
@@ -127,14 +131,17 @@ public class Robot extends SampleRobot {
         
     	while (isOperatorControl() && isEnabled()) {
             
-    		pid.enable();
-    		pid.setInputRange(0, 5);
-        	pid.setOutputRange(-1, 1);
-        	pid.setSetpoint(2.5);
+        	//SmartDashboard.putNumber("PIDError", pid.getError());
+        	if (stick1.isAPushed()){
+        		drivePos += 500;
+        	} else if (stick1.isBPushed()){
+        		drivePos -= 500;
+        	}
+    		//driveTalon.set(drivePos);
         	
-        	SmartDashboard.putNumber("PIDError", pid.getError());
-    		
-    		//Timer.delay(0.005);		// wait for a motor update time
+    		Timer.delay(0.005);		// wait for a motor update time
+    		stick1.clearButtons();
+    		stick2.clearButtons();
         }
     }
 
@@ -171,49 +178,15 @@ public class Robot extends SampleRobot {
             SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
             
-            if (imu.getYaw() > 0) {
-            		servo.setAngle(imu.getYaw()/2);
-            } else if (imu.getYaw() < 0){
-            	servo.setAngle(180+imu.getYaw()/2);
-            }
             
-            SmartDashboard.putNumber("Servo Angle", servo.getAngle());
-            double talonPosition = driveTalon.getEncPosition();
-            SmartDashboard.putNumber("Pot", talonPosition);
-            if (stick1.isXHeld()){
-            	driveTalon.set(.5);
-            } else if (stick1.isYHeld()){
-            	driveTalon.set(-.5);
-            }
-            
-            //driveTalon.set(drivePos);
-            //rotateTalon.set(.3);
+            swerve.move(deadband.zero(stick1.getRawAxis(LY), .1), deadband.zero(stick1.getRawAxis(LX), .1), deadband.zero(stick1.getRawAxis(RX), 0));
+
             Timer.delay(.01);
-            //talon.set(talonPosition/1023);
-            if (stick1.isAPushed()){
-            	drivePos += 1753/4;
-            } else if (stick1.isBPushed()){
-            	drivePos -= 1752/4;
-            }
-            driveTalon.set(drivePos);
-            SmartDashboard.putNumber("Angle: ", returnAngle(driveTalon.getEncPosition()));
-            SmartDashboard.putNumber("Drive Target", drivePos);
-            SmartDashboard.putNumber("OutPut Current ", driveTalon.getOutputCurrent());
-            SmartDashboard.putNumber("OutPut Voltage ", driveTalon.getOutputVoltage());
+
             stick1.clearButtons();
             stick2.clearButtons();
     	}
     }
     
-    public int returnAngle(int encoderValue){
-    	System.out.println("Encoder Value: " + encoderValue);
-    	int angle = 0;
-    	if (encoderValue >= 0){
-    		angle = (int)(encoderValue * (360.0/1652)) % 360;
-    	} else if (encoderValue < 0){
-    		angle = 360 - (int)(encoderValue * (360.0/1652)) % 360;
-    	}
-    	System.out.println(angle);
-    	return angle;
-    }
+
 }
