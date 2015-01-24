@@ -150,7 +150,7 @@ public class Robot extends SampleRobot {
      */
     public void test() {
     	while (isTest() && isEnabled()){
-    		indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
+    		//indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
     		//System.out.println("POV" + stick1.getPOV());
     		
             boolean is_calibrating = imu.isCalibrating();
