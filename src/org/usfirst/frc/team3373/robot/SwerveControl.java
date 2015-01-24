@@ -131,6 +131,28 @@ public class SwerveControl  {
     	return deltaEncoder;
     }
     
+    public void move(double LY, double LX, double RX){
+    	double radians;
+    	double deltaTheta;
+    	double magnitude;
+    	
+    	//radians = Math.atan2(LY, LX);
+    	//targetTheta = Math.toDegrees(radians);
+    	
+    	targetTheta = 5000;
+    	
+    	rotateLFMotor.set(targetTheta);
+    	//rotateLBMotor.set(targetTheta);
+    	//rotateRFMotor.set(targetTheta);
+    	//rotateRBMotor.set(targetTheta);
+    	
+    	driveLFMotor.set(0.25);
+    	//driveLBMotor.set(0.25);
+    	//driveRFMotor.set(0.25);
+    	//driveRBMotor.set(0.25);
+    }	
+    
+    /*
 	public void move(double LY, double LX, double RX){//input the target angle position for wheel, current position of wheel, Talon for the rotating motor, CANTalon for drive motor
 		double radians;
 		double deltaTheta;
@@ -154,11 +176,11 @@ public class SwerveControl  {
 
         
         rotateLFMotor.set(rotateLFMotor.getEncPosition() + angleToEncoderUnit((int)deltaTheta));
-        /*if (deltaTheta > 0){
-        	driveLFMotor.set(magnitude);
-        } else if (deltaTheta < 0){
-        	driveLFMotor.set(-magnitude);
-        }*/
+        //if (deltaTheta > 0){
+        //	driveLFMotor.set(magnitude);
+        //} else if (deltaTheta < 0){
+        //	driveLFMotor.set(-magnitude);
+        //}
 		
 		SmartDashboard.putNumber("Target Angle: ", (int)targetTheta);
 		SmartDashboard.putNumber("Delta Theta: ", deltaTheta);
@@ -166,8 +188,7 @@ public class SwerveControl  {
         SmartDashboard.putNumber("Current Encoder", rotateLFMotor.getEncPosition());
         SmartDashboard.putNumber("Current Angle", encoderUnitToAngle(rotateLFMotor.getEncPosition()));
 		
-	
-	}
+	}*/
 	
 
 	
