@@ -136,10 +136,12 @@ public class SwerveControl  {
     	double deltaTheta;
     	double magnitude;
     	
-    	//radians = Math.atan2(LY, LX);
-    	//targetTheta = Math.toDegrees(radians);
+    	radians = Math.atan2(LY, LX);
+    	targetTheta = Math.toDegrees(radians);
     	
     	targetTheta = 5000;
+    	
+
     	
     	rotateLFMotor.set(targetTheta);
     	//rotateLBMotor.set(targetTheta);
