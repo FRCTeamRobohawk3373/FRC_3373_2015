@@ -38,7 +38,6 @@ public class Robot extends SampleRobot {
     SuperJoystick stick2;
     Indexer indexer;
     Servo servo;
-    CANTalon driveTalon;
     Talon rotateTalon;
     PIDController pid;
     SwerveControl swerve;
@@ -70,7 +69,23 @@ public class Robot extends SampleRobot {
     double ramprate = 36;
     int profile = 0;
     int drivePos = 1;
+    /***************************
+     * Robot Talon Identifier  *
+     *		F                  *
+     * 0 ------ 1              *
+     * |        |              *
+     * |        |              *
+     * 2--------3              *
+     ***************************/
+    int frontLeftRotate = 0;
+    int frontRightRotate = 1;
+    int backLeftRotate = 2;
+    int backRightRotate = 3;
     
+    int frontLeftDrive = 0;
+    int frontRightDrive = 1;
+    int backLeftDrive = 2;
+    int backRightDrive = 3;
     
     
     public Robot() {
@@ -78,8 +93,11 @@ public class Robot extends SampleRobot {
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
         //servo = new Servo(2);
-        swerve = new SwerveControl(0, 0, 1, 1, 2, 2, 3, 3);
+        swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, frontRightRotate, 
+        		                   backLeftDrive, backLeftRotate, backLeftDrive, backLeftRotate);
         deadband = new Deadband();
+
+        
 
         //driveTalon = new CANTalon (0);
 
@@ -179,7 +197,7 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
             
             
-            swerve.move(deadband.zero(stick1.getRawAxis(LY), .1), deadband.zero(stick1.getRawAxis(LX), .1), deadband.zero(stick1.getRawAxis(RX), 0));
+            //swerve.move(deadband.zero(stick1.getRawAxis(LY), .1), deadband.zero(stick1.getRawAxis(LX), .1), deadband.zero(stick1.getRawAxis(RX), 0));
 
             Timer.delay(.01);
 
