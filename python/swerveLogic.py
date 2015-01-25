@@ -18,16 +18,16 @@ def main():
     rotateAngle = math.degrees(math.atan2(wheelLength, wheelWidth)) #This is the ratio of the width divided by length of the wheel position
     
     #Declare Wheels
-    wheelA = Wheel(0, 0, 270 - rotateAngle) #Front Left 
-    wheelB = Wheel(0, 0, rotateAngle + 270) #Back Left
-    wheelC = Wheel(0, 0, 90 - rotateAngle) #Back Right
-    wheelD = Wheel(0, 0, rotateAngle + 90) #Front Right
+    frontLeftWheel = Wheel(0, 0, 270 - rotateAngle) #Front Left 
+    backLeftWheel = Wheel(0, 0, rotateAngle + 270) #Back Left
+    backRightWheel = Wheel(0, 0, 90 - rotateAngle) #Back Right
+    frontRightWheel = Wheel(0, 0, rotateAngle + 90) #Front Right
 
     rotationMagnitude = abs(rAxis)
 
     largest = 0
 
-    for wheel in (wheelA, wheelB, wheelC, wheelD):
+    for wheel in (frontLeftWheel, backLeftWheel, backRightWheel, frontRightWheel):
         #Sum Wheel Vectors
         rotateX = math.cos(math.radians(wheel.rotateAngle)) * rotationMagnitude
         rotateY = math.sin(math.radians(wheel.rotateAngle)) * rotationMagnitude
@@ -45,7 +45,7 @@ def main():
         if wheel.angle < 0:
             wheel.angle += 360
     
-    for wheel in (wheelA, wheelB, wheelC, wheelD):
+    for wheel in (frontLeftWheel, backLeftWheel, backRightWheel, frontRightWheel):
         wheel.speed /= largest
         debugPrint(wheel.angle)
         debugPrint(wheel.speed)
