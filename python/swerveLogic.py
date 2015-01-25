@@ -22,9 +22,7 @@ def main():
     wheelB = Wheel(0, 0, rotateAngle + (360 - 2 * rotateAngle)) #Back Left
     wheelC = Wheel(0, 0, rotateAngle) #Back Right
     wheelD = Wheel(0, 0, rotateAngle + (180 - 2 * rotateAngle)) #Front Right
-    
-    velocityAngle = math.degrees(math.atan2(yAxis, xAxis))
-    velocityMagnitude = math.sqrt(math.pow(xAxis, 2) + math.pow(yAxis, 2))
+
     rotationMagnitude = abs(rAxis)
 
     largest = 0
