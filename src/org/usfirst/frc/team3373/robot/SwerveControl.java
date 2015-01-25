@@ -26,7 +26,7 @@ public class SwerveControl  {
 	
 	int encoderUnitsPerRotation = 1665;
 	
-    double p = 10; //100 is very close
+    double p = 5; //100 is very close
     double i = 0;
     double d = 0;
     double f = 0;
@@ -134,10 +134,14 @@ public class SwerveControl  {
     	}
     	
     	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FRWheel.getDeltaTheta()));
+    	FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FLWheel.getDeltaTheta()));
+    	BRWheel.rotateMotor.set(BRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(BRWheel.getDeltaTheta()));
+    	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(BLWheel.getDeltaTheta()));
+    	
     	//FRWheel.driveMotor.set(FRWheel.speed);
-    	SmartDashboard.putNumber("Current Angle", FRWheel.currentAngle);
-    	SmartDashboard.putNumber("Delta Theta", FRWheel.getDeltaTheta());
-    	SmartDashboard.putNumber("Target Angle", FRWheel.targetAngle);
+    	SmartDashboard.putNumber("Current Angle", BLWheel.currentAngle);
+    	SmartDashboard.putNumber("Delta Theta", BLWheel.getDeltaTheta());
+    	SmartDashboard.putNumber("Target Angle", BLWheel.targetAngle);
     
     }
     
