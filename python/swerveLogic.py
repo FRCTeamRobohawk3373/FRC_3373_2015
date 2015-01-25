@@ -19,9 +19,9 @@ def main():
     
     #Declare Wheels
     wheelA = Wheel(0, 0, 270 - rotateAngle) #Front Left 
-    wheelB = Wheel(0, 0, rotateAngle + 270) #Back Left done
+    wheelB = Wheel(0, 0, rotateAngle + 270) #Back Left
     wheelC = Wheel(0, 0, 90 - rotateAngle) #Back Right
-    wheelD = Wheel(0, 0, rotateAngle + 90) #Front Right done
+    wheelD = Wheel(0, 0, rotateAngle + 90) #Front Right
 
     rotationMagnitude = abs(rAxis)
 
