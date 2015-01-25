@@ -8,8 +8,8 @@ def main():
     print("Currently running in Python " + platform.python_version())
     
     #Dummy values for testing. These will be read from the controller in the robot code
-    xAxis = math.sqrt(2)/2 #Where -1 is left and 1 is right
-    yAxis = math.sqrt(2)/2 #Where -1 is back and 1 is forward
+    xAxis = 0 #Where -1 is left and 1 is right
+    yAxis = 0 #Where -1 is back and 1 is forward
     rAxis = 1 #Where -1 i counterclockwise and 1 is clockwise
     
     #Constants
@@ -18,21 +18,21 @@ def main():
     rotateAngle = math.degrees(math.atan2(wheelLength, wheelWidth)) #This is the ratio of the width divided by length of the wheel position
     
     #Declare Wheels
-    wheelA = Wheel(0, 0, rotateAngle + 180) #Front Left
-    wheelB = Wheel(0, 0, rotateAngle + (360 - 2 * rotateAngle)) #Back Left
-    wheelC = Wheel(0, 0, rotateAngle) #Back Right
-    wheelD = Wheel(0, 0, rotateAngle + (180 - 2 * rotateAngle)) #Front Right
+    frontLeftWheel = Wheel(270 - rotateAngle) #Front Left 
+    backLeftWheel = Wheel(rotateAngle + 270) #Back Left
+    backRightWheel = Wheel(90 - rotateAngle) #Back Right
+    frontRightWheel = Wheel(rotateAngle + 90) #Front Right
 
     rotationMagnitude = abs(rAxis)
 
     largest = 0
 
-    for wheel in (wheelA, wheelB, wheelC, wheelD):
+    for wheel in (frontLeftWheel, backLeftWheel, backRightWheel, frontRightWheel):
         #Sum Wheel Vectors
         rotateX = math.cos(math.radians(wheel.rotateAngle)) * rotationMagnitude
         rotateY = math.sin(math.radians(wheel.rotateAngle)) * rotationMagnitude
     
-        if rAxis < 0:
+        if rAxis > 0:
             rotateX = -rotateX
             rotateY = -rotateY
         
@@ -45,7 +45,7 @@ def main():
         if wheel.angle < 0:
             wheel.angle += 360
     
-    for wheel in (wheelA, wheelB, wheelC, wheelD):
+    for wheel in (frontLeftWheel, backLeftWheel, backRightWheel, frontRightWheel):
         wheel.speed /= largest
         debugPrint(wheel.angle)
         debugPrint(wheel.speed)
@@ -55,9 +55,9 @@ def debugPrint(string):
         print(string)
 
 class Wheel:
-    def __init__(self, speed, angle, rotateAngle):
-        self.speed = speed
-        self.angle = angle
+    def __init__(self, rotateAngle):
+        self.speed = 0
+        self.angle = 0
         self.rotateAngle = rotateAngle
         
 main()
