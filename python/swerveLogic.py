@@ -32,7 +32,7 @@ def main():
         rotateX = math.cos(math.radians(wheel.rotateAngle)) * rotationMagnitude
         rotateY = math.sin(math.radians(wheel.rotateAngle)) * rotationMagnitude
     
-        if rAxis < 0:
+        if rAxis > 0:
             rotateX = -rotateX
             rotateY = -rotateY
         
