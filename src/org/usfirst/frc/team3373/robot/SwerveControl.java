@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveControl  {
 	
+	//must also use a wheel class
+	
 	Talon driveLFMotor;
 	CANTalon rotateLFMotor;
 	//Front Right Wheel
@@ -33,38 +35,28 @@ public class SwerveControl  {
     int profile = 0;
     int drivePos = 1;
 	int targetTheta;
+	SwerveWheel[] wheelArray;
 
+	double angleToDiagonal;
 	
-	public SwerveControl(int frontLeftDriveChannel, int frontLeftRotateID, int frontRightDriveChannel, int frontRightRotateID, int backLeftDriveChannel, int backLeftRotateID, int backRightDriveChannel, int backRightRotateID){
-		//Front Left Wheel
-		driveLFMotor = new Talon(frontLeftDriveChannel);
-		rotateLFMotor = new CANTalon(frontLeftRotateID);
-		//Front Right Wheel
-		driveRFMotor = new Talon(frontRightDriveChannel);
-		rotateRFMotor = new CANTalon(frontRightRotateID);		
-		//Back Left Wheel
-		driveLBMotor = new Talon(backLeftDriveChannel);
-		rotateLBMotor = new CANTalon(backLeftRotateID);
-		//Back Right Wheel
-		driveRBMotor = new Talon(backRightDriveChannel);
-		rotateRBMotor = new CANTalon(backRightRotateID);
-        
-		rotateLFMotor.setPID(p,i,d);
-        rotateLFMotor.changeControlMode(CANTalon.ControlMode.Position);
-        rotateLFMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        
-		rotateRFMotor.setPID(p,i,d);
-        rotateRFMotor.changeControlMode(CANTalon.ControlMode.Position);
-        rotateRFMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        
-		rotateLBMotor.setPID(p,i,d);
-        rotateLBMotor.changeControlMode(CANTalon.ControlMode.Position);
-        rotateLBMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        
-		rotateRBMotor.setPID(p,i,d);
-        rotateRBMotor.changeControlMode(CANTalon.ControlMode.Position);
-        rotateRBMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        targetTheta = rotateLFMotor.getEncPosition();
+	/*give dimensions between the wheels both width and length, 
+	 * width is the distance between left wheels and right wheels,
+	 *  length is the distance between front wheels and back wheels*/
+	
+	public SwerveControl(int frontLeftDriveChannel, int frontLeftRotateID, int frontRightDriveChannel, 
+			int frontRightRotateID, int backLeftDriveChannel, int backLeftRotateID, int backRightDriveChannel,
+			int backRightRotateID, double width, double length){
+		
+			
+		angleToDiagonal = Math.toDegrees(Math.atan2(length, width));
+		
+		
+		SwerveWheel FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal));
+		SwerveWheel FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90));
+		SwerveWheel BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270));
+		SwerveWheel BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal));
+		
+		SwerveWheel[] wheelArray = {FLWheel, FRWheel, BLWheel, BRWheel};
 	}
 	
 	double deltaTheta;
@@ -74,56 +66,7 @@ public class SwerveControl  {
 	double integralConstant = 0;
 	
 	
-	public double calculateTargetDeltaTheta(int targetAngle, int currentAngle){
-		double deltaThetaOne; 
-		double deltaThetaTwo; 
-		double deltaThetaOne360;
-		double deltaThetaTwo360;
-		double deltaThetaOneTarget;
-		double deltaThetaTwoTarget;
-		
-		if (currentAngle == 0){
-			deltaThetaOneTarget = Math.abs(targetAngle - 360);
-			deltaThetaTwoTarget = Math.abs(targetAngle - 540);
-		} else {
-			deltaThetaOneTarget = 1000;
-			deltaThetaTwoTarget = 1000;
-		}
-		
-		if (targetAngle == 0){
-			deltaThetaOne360 = Math.abs(360-currentAngle);
-			deltaThetaTwo360 = Math.abs(360 - currentAngle - 180);
-		} else {
-			deltaThetaOne360 = 1000;
-			deltaThetaTwo360 = 1000;
-		}
-
-
-		deltaThetaOne = Math.abs(targetAngle - currentAngle);
-		deltaThetaTwo = Math.abs(targetAngle - currentAngle - 180);
-		
-		SmartDashboard.putNumber("DeltaThetaOne: ", deltaThetaOne);
-		SmartDashboard.putNumber("DeltaThetaTwo: ", deltaThetaTwo);
-		SmartDashboard.putNumber("DeltaThetaOne360: ", deltaThetaOne360);
-		SmartDashboard.putNumber("DeltaThetaTwo360: ", deltaThetaTwo360);
-		SmartDashboard.putNumber("DeltaThetaOneTarget: ", deltaThetaOneTarget);
-		SmartDashboard.putNumber("DeltaThetaTwoTarget: ", deltaThetaTwoTarget);
-		
-		if (deltaThetaOne <= 90){
-			return -deltaThetaOne;//if we get here DeltaTheta must be <= 90
-		} else if (deltaThetaTwo <= 90){
-			return deltaThetaTwo;//if we get here DeltaTheta must be <= 90
-		} else if (deltaThetaOne360 <= 90){
-			return -deltaThetaOne360;
-		} else if (deltaThetaTwo360 <= 90){
-			return deltaThetaTwo360;
-		} else if (deltaThetaOneTarget <= 90){
-			return -deltaThetaOneTarget;
-		} else if (deltaThetaTwoTarget <= 90){
-			return deltaThetaTwoTarget;
-		} else return 0;
-		
-	}
+	
 	
     public int encoderUnitToAngle(int encoderValue){
     	double angle = 0;
@@ -145,7 +88,104 @@ public class SwerveControl  {
     	return (int)deltaEncoder;
     }
     
-    public void move(double LY, double LX, double RX){
+    public void calculateSwerveControl(double LY, double LX, double RX){
+    	double xAxis = LX;
+    	double yAxis = LY;
+    	double rAxis = RX;
+    	double rotateXComponent;
+    	double rotateYComponent;
+    	double fastestSpeed = 0;
+    	
+    	
+    	double rotationMagnitude = Math.abs(rAxis);
+    	
+    	for (SwerveWheel wheel : wheelArray){
+    		
+    		rotateXComponent = Math.cos(Math.toRadians(wheel.rAngle)) * rotationMagnitude;
+    		rotateYComponent = Math.sin(Math.toRadians(wheel.rAngle)) * rotationMagnitude;
+    		
+    		if(rAxis > 0){
+    			rotateXComponent = -rotateXComponent;
+    			rotateYComponent = -rotateYComponent;
+    		}
+    		
+    		wheel.speed = Math.sqrt(Math.pow(rotateXComponent + xAxis, 2) + Math.pow((rotateYComponent + yAxis), 2));
+    		wheel.targetAngle = Math.toDegrees(Math.atan2((rotateYComponent + yAxis), (rotateXComponent + xAxis)));
+    		
+    		if(wheel.speed > fastestSpeed){
+    			fastestSpeed = wheel.speed;
+    		}
+    		
+    		if(wheel.targetAngle < 0){
+    			wheel.targetAngle += 360;
+    		}
+    		
+    		wheel.currentAngle = wheel.rotateMotor.getEncPosition();
+    		wheel.getDeltaTheta();
+    	}
+    	
+    	for(SwerveWheel wheel : wheelArray){
+    		wheel.speed /= fastestSpeed;
+    	}
+    	
+    	
+    
+    }
+    
+    /*public double calculateTargetDeltaTheta(int targetAngle, int currentAngle){
+		double deltaThetaOne; 
+		double deltaThetaTwo; 
+		double deltaThetaOne360;
+		double deltaThetaTwo360;
+		double deltaThetaOneTarget;
+		double deltaThetaTwoTarget;
+	
+		if (currentAngle == 0){
+			deltaThetaOneTarget = Math.abs(targetAngle - 360);
+			deltaThetaTwoTarget = Math.abs(targetAngle - 540);
+		} else {
+			deltaThetaOneTarget = 1000;
+			deltaThetaTwoTarget = 1000;
+		}
+	
+		if (targetAngle == 0){
+			deltaThetaOne360 = Math.abs(360-currentAngle);
+			deltaThetaTwo360 = Math.abs(360 - currentAngle - 180);
+		} else {
+			deltaThetaOne360 = 1000;
+			deltaThetaTwo360 = 1000;
+		}
+
+
+		deltaThetaOne = Math.abs(targetAngle - currentAngle);
+		deltaThetaTwo = Math.abs(targetAngle - currentAngle - 180);
+	
+		SmartDashboard.putNumber("DeltaThetaOne: ", deltaThetaOne);
+		SmartDashboard.putNumber("DeltaThetaTwo: ", deltaThetaTwo);
+		SmartDashboard.putNumber("DeltaThetaOne360: ", deltaThetaOne360);
+		SmartDashboard.putNumber("DeltaThetaTwo360: ", deltaThetaTwo360);
+		SmartDashboard.putNumber("DeltaThetaOneTarget: ", deltaThetaOneTarget);
+		SmartDashboard.putNumber("DeltaThetaTwoTarget: ", deltaThetaTwoTarget);
+	
+		if (deltaThetaOne <= 90){
+			return -deltaThetaOne;//if we get here DeltaTheta must be <= 90
+		} else if (deltaThetaTwo <= 90){
+			return deltaThetaTwo;//if we get here DeltaTheta must be <= 90
+		} else if (deltaThetaOne360 <= 90){
+			return -deltaThetaOne360;
+		} else if (deltaThetaTwo360 <= 90){
+			return deltaThetaTwo360;
+		} else if (deltaThetaOneTarget <= 90){
+			return -deltaThetaOneTarget;
+		} else if (deltaThetaTwoTarget <= 90){
+			return deltaThetaTwoTarget;
+		} else return 0;
+	
+	}*/
+    
+    
+    
+    /*public void move(double LY, double LX, double RX){
     	double radians;
     	double deltaTheta;
     	double magnitude;
@@ -199,7 +239,7 @@ public class SwerveControl  {
     	SmartDashboard.putNumber("TargetTheta", targetTheta);
     	SmartDashboard.putNumber("EncoderDelta", angleToEncoderUnit((calculateTargetDeltaTheta(targetTheta, currentTheta))));
     	SmartDashboard.putNumber("Encoder Position", rotateRBMotor.getEncPosition());
-    }
+    }*/
     
     /*
 	public void move(double LY, double LX, double RX){//input the target angle position for wheel, current position of wheel, Talon for the rotating motor, CANTalon for drive motor
