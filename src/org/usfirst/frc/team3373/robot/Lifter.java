@@ -14,8 +14,25 @@ public class Lifter {
 	double il = 0;
 	double dl = 10;
 	
+	//height in inches
+	double robotHeight = 60;
+	
+	//parallelogram lift length in inches
+	double armLength = 60;
+	
+	double cosTheta;
+	
 	//difference in position in pot value
 	double offset = .05;
+	
+	//distance between lift joint and actuator joint on height
+	double jointThetaH = 12;
+	
+	//distance between lift joint and actuator joint on arm
+	double jointThetaA = 24;
+	
+	double potScalar = 5;
+	double casingLength = 12;
 	
 	/**
 	 * Initializes Lifter class, feeds in motor values to control lifting motors
@@ -38,14 +55,39 @@ public class Lifter {
 		rightActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
 		leftActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
 	}
+	
 	/**
 	 * Given a target position, goes to the position
 	 * @param targetPos position from 0-5 volts the lifter needs to go to
 	 */
 	public void goToPosition(double targetPos){
 			rightActuator.set(targetPos);
-			leftActuator.set(targetPos -offset);
+			leftActuator.set(targetPos - offset);
 	}
 	
+	/**
+	 * Converts target height to a position on the potentiometer 
+	 * @param targetHeight target lifter height above the ground
+	 * @return target pot position (0-5V)
+	 */
+	public double heightToPosition(double targetHeight){
+		double actuatorLength;
+		cosTheta = (robotHeight - targetHeight)/armLength;
+		actuatorLength = Math.sqrt(Math.pow(jointThetaH, 2) + Math.pow(jointThetaA, 2) - (2*jointThetaH*jointThetaA*cosTheta));
+		
+		return actuatorLengthToPot(actuatorLength);
+	}
+	
+	/**
+	 * given a target actuator length, returns a pot position
+	 * @param actuatorTargetLength target length for to hit a certain lifter height
+	 * @return encoder position (0-5)
+	 */
+	private double actuatorLengthToPot(double actuatorTargetLength){
+		double potPosition;
+		potPosition = (actuatorTargetLength-casingLength) * (potScalar/casingLength);
+		
+		return potPosition;
+	}
 	
 }
