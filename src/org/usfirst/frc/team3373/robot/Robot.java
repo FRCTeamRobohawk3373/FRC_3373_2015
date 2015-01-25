@@ -90,14 +90,18 @@ public class Robot extends SampleRobot {
     int backLeftDrive = 2;
     int backRightDrive = 3;
     
+    double robotWidth = 1;
+    double robotLength = 1;
+    
     
     public Robot() {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
         indexer = new Indexer();
         //servo = new Servo(2);
-        swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, frontRightRotate, 
-        		                   backLeftDrive, backLeftRotate, backRightDrive, backRightRotate);
+        swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
+        		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
+        		backRightRotate, robotWidth, robotLength);
         deadband = new Deadband();
         magneticLimit = new DigitalInput(0);
         //twoTalon = new CANTalon(3);
@@ -181,7 +185,7 @@ public class Robot extends SampleRobot {
                 imu.zeroYaw();
                 first_iteration = false;
             }
-    		
+    		/*
             SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
             SmartDashboard.putBoolean(  "IMU_IsCalibrating",    imu.isCalibrating());
             SmartDashboard.putNumber(   "IMU_Yaw",              imu.getYaw());
@@ -198,12 +202,10 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Accel_X",          imu.getWorldLinearAccelX());
             SmartDashboard.putNumber(   "IMU_Accel_Y",          imu.getWorldLinearAccelY());
             SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
-            SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
+            SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            //swerve.move(deadband.zero(stick1.getRawAxis(LY), .1), deadband.zero(stick1.getRawAxis(LX), .1), deadband.zero(stick1.getRawAxis(RX), 0));
-            swerve.move(stick1.isAHeld(), stick1.isBHeld(), stick1.isXHeld(), stick1.isYHeld());
-            //twoTalon.set(2000);
+            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             //SmartDashboard.putNumber("twoTalon", twoTalon.getEncPosition());
             Timer.delay(.01);
             SmartDashboard.putBoolean("Limit", magneticLimit.get());

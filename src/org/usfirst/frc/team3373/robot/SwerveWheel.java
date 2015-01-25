@@ -12,6 +12,8 @@ public class SwerveWheel {
 	double speed;
 	double targetAngle;
 	double currentAngle;
+	int encoderUnitsPerRotation = 1665;
+
 	
 	
 	public SwerveWheel(int driveMotorChannel, int rotateMotorID, double p, double i, double d, double rotateAngle){
@@ -23,7 +25,7 @@ public class SwerveWheel {
         rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
         rotateMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         
-        currentAngle = rotateMotor.getEncPosition();
+        currentAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
         targetAngle = rotateMotor.getEncPosition();
 		rAngle = rotateAngle;
 	}
@@ -42,6 +44,18 @@ public class SwerveWheel {
 		return deltaTheta;
 		
 	}
+	
+    public int encoderUnitToAngle(int encoderValue){
+    	double angle = 0;
+    	if (encoderValue >= 0){
+    		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
+    		angle = angle % 360;
+    	} else if (encoderValue < 0){
+    		angle = 360 - (encoderValue * (360.0/encoderUnitsPerRotation));
+    		angle = angle % 360;
+    	}
+    	return (int)angle;
+    }
 	
 	
 }

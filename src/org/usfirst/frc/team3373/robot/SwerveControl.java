@@ -37,6 +37,11 @@ public class SwerveControl  {
 	int targetTheta;
 	SwerveWheel[] wheelArray;
 
+	SwerveWheel FLWheel;
+	SwerveWheel FRWheel;
+	SwerveWheel BLWheel;
+	SwerveWheel BRWheel;
+	
 	double angleToDiagonal;
 	
 	/*give dimensions between the wheels both width and length, 
@@ -51,18 +56,18 @@ public class SwerveControl  {
 		angleToDiagonal = Math.toDegrees(Math.atan2(length, width));
 		
 		
-		SwerveWheel FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal));
-		SwerveWheel FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90));
-		SwerveWheel BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270));
-		SwerveWheel BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal));
+		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal));
+		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90));
+		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270));
+		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal));
 		
-		SwerveWheel[] wheelArray = {FLWheel, FRWheel, BLWheel, BRWheel};
+		wheelArray = new SwerveWheel[]{FLWheel, FRWheel, BLWheel, BRWheel};
 	}
 	
 	double deltaTheta;
 	
-	double proprtionalConstant = 0;
-	double derivativeConstant = 0;
+	double proprtionalConstant = .01;
+	double derivativeConstant = 50;
 	double integralConstant = 0;
 	
 	
@@ -120,7 +125,7 @@ public class SwerveControl  {
     			wheel.targetAngle += 360;
     		}
     		
-    		wheel.currentAngle = wheel.rotateMotor.getEncPosition();
+    		wheel.currentAngle = encoderUnitToAngle(wheel.rotateMotor.getEncPosition());
     		wheel.getDeltaTheta();
     	}
     	
@@ -128,7 +133,11 @@ public class SwerveControl  {
     		wheel.speed /= fastestSpeed;
     	}
     	
-    	
+    	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FRWheel.getDeltaTheta()));
+    	//FRWheel.driveMotor.set(FRWheel.speed);
+    	SmartDashboard.putNumber("Current Angle", FRWheel.currentAngle);
+    	SmartDashboard.putNumber("Delta Theta", FRWheel.getDeltaTheta());
+    	SmartDashboard.putNumber("Target Angle", FRWheel.targetAngle);
     
     }
     
