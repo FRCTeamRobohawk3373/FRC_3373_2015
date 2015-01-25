@@ -18,10 +18,10 @@ def main():
     rotateAngle = math.degrees(math.atan2(wheelLength, wheelWidth)) #This is the ratio of the width divided by length of the wheel position
     
     #Declare Wheels
-    frontLeftWheel = Wheel(0, 0, 270 - rotateAngle) #Front Left 
-    backLeftWheel = Wheel(0, 0, rotateAngle + 270) #Back Left
-    backRightWheel = Wheel(0, 0, 90 - rotateAngle) #Back Right
-    frontRightWheel = Wheel(0, 0, rotateAngle + 90) #Front Right
+    frontLeftWheel = Wheel(270 - rotateAngle) #Front Left 
+    backLeftWheel = Wheel(rotateAngle + 270) #Back Left
+    backRightWheel = Wheel(90 - rotateAngle) #Back Right
+    frontRightWheel = Wheel(rotateAngle + 90) #Front Right
 
     rotationMagnitude = abs(rAxis)
 
@@ -55,9 +55,9 @@ def debugPrint(string):
         print(string)
 
 class Wheel:
-    def __init__(self, speed, angle, rotateAngle):
-        self.speed = speed
-        self.angle = angle
+    def __init__(self, rotateAngle):
+        self.speed = 0
+        self.angle = 0
         self.rotateAngle = rotateAngle
         
 main()
