@@ -8,8 +8,8 @@ def main():
     print("Currently running in Python " + platform.python_version())
     
     #Dummy values for testing. These will be read from the controller in the robot code
-    xAxis = math.sqrt(2)/2 #Where -1 is left and 1 is right
-    yAxis = math.sqrt(2)/2 #Where -1 is back and 1 is forward
+    xAxis = 0 #Where -1 is left and 1 is right
+    yAxis = 0 #Where -1 is back and 1 is forward
     rAxis = 1 #Where -1 i counterclockwise and 1 is clockwise
     
     #Constants
@@ -18,10 +18,10 @@ def main():
     rotateAngle = math.degrees(math.atan2(wheelLength, wheelWidth)) #This is the ratio of the width divided by length of the wheel position
     
     #Declare Wheels
-    wheelA = Wheel(0, 0, rotateAngle + 180) #Front Left
-    wheelB = Wheel(0, 0, rotateAngle + (360 - 2 * rotateAngle)) #Back Left
-    wheelC = Wheel(0, 0, rotateAngle) #Back Right
-    wheelD = Wheel(0, 0, rotateAngle + (180 - 2 * rotateAngle)) #Front Right
+    wheelA = Wheel(0, 0, 270 - rotateAngle) #Front Left 
+    wheelB = Wheel(0, 0, rotateAngle + 270) #Back Left done
+    wheelC = Wheel(0, 0, 90 - rotateAngle) #Back Right
+    wheelD = Wheel(0, 0, rotateAngle + 90) #Front Right done
 
     rotationMagnitude = abs(rAxis)
 
