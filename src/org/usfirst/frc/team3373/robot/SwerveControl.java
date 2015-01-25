@@ -32,7 +32,7 @@ public class SwerveControl  {
     double ramprate = 36;
     int profile = 0;
     int drivePos = 1;
-	double targetTheta;
+	int targetTheta;
 
 	
 	public SwerveControl(int frontLeftDriveChannel, int frontLeftRotateID, int frontRightDriveChannel, int frontRightRotateID, int backLeftDriveChannel, int backLeftRotateID, int backRightDriveChannel, int backRightRotateID){
@@ -52,6 +52,18 @@ public class SwerveControl  {
 		rotateLFMotor.setPID(p,i,d);
         rotateLFMotor.changeControlMode(CANTalon.ControlMode.Position);
         rotateLFMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        
+		rotateRFMotor.setPID(p,i,d);
+        rotateRFMotor.changeControlMode(CANTalon.ControlMode.Position);
+        rotateRFMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        
+		rotateLBMotor.setPID(p,i,d);
+        rotateLBMotor.changeControlMode(CANTalon.ControlMode.Position);
+        rotateLBMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        
+		rotateRBMotor.setPID(p,i,d);
+        rotateRBMotor.changeControlMode(CANTalon.ControlMode.Position);
+        rotateRBMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         targetTheta = rotateLFMotor.getEncPosition();
 	}
 	
@@ -114,21 +126,23 @@ public class SwerveControl  {
 	}
 	
     public int encoderUnitToAngle(int encoderValue){
-    	int angle = 0;
+    	double angle = 0;
     	if (encoderValue >= 0){
-    		angle = (int)((encoderValue * (360.0/encoderUnitsPerRotation)) % 360);
+    		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
+    		angle = angle % 360;
     	} else if (encoderValue < 0){
-    		angle = 360 - (int)((encoderValue * (360.0/encoderUnitsPerRotation)) % 360);
+    		angle = 360 - (encoderValue * (360.0/encoderUnitsPerRotation));
+    		angle = angle % 360;
     	}
-    	return angle;
+    	return (int)angle;
     }	
 	
-    public int angleToEncoderUnit(int angle){//Only pass in deltaTheta
+    public int angleToEncoderUnit(double angle){//Only pass in deltaTheta
     	
-    	int deltaEncoder;
-    	deltaEncoder = angle*(int)(encoderUnitsPerRotation/360.0); 
+    	double deltaEncoder;
+    	deltaEncoder = angle*(encoderUnitsPerRotation/360.0); 
     	
-    	return deltaEncoder;
+    	return (int)deltaEncoder;
     }
     
     public void move(double LY, double LX, double RX){
@@ -137,22 +151,55 @@ public class SwerveControl  {
     	double magnitude;
     	
     	radians = Math.atan2(LY, LX);
-    	targetTheta = Math.toDegrees(radians);
-    	
-    	targetTheta = 5000;
+    	targetTheta = (int) Math.toDegrees(radians);
+    	int currentTheta = encoderUnitToAngle(rotateRBMotor.getEncPosition());
+    	//targetTheta = 5000;
     	
 
     	
-    	rotateLFMotor.set(targetTheta);
+    	rotateRBMotor.set(rotateRBMotor.getEncPosition()-angleToEncoderUnit((calculateTargetDeltaTheta(targetTheta, currentTheta))));
+    	SmartDashboard.putNumber("RotateLBMotor", rotateLBMotor.get());
+    	SmartDashboard.putNumber("Current Theta", currentTheta);
+    	SmartDashboard.putNumber("TargetTheta", calculateTargetDeltaTheta(targetTheta, currentTheta));
+    	//rotateLFMotor.set(targetTheta);
     	//rotateLBMotor.set(targetTheta);
     	//rotateRFMotor.set(targetTheta);
     	//rotateRBMotor.set(targetTheta);
     	
-    	driveLFMotor.set(0.25);
+    	//driveLFMotor.set(0.25);
     	//driveLBMotor.set(0.25);
     	//driveRFMotor.set(0.25);
     	//driveRBMotor.set(0.25);
     }	
+    
+    public void move(boolean a, boolean b, boolean x, boolean y){
+    	double radians;
+    	double deltaTheta;
+    	double magnitude;
+    	
+    	
+    	if (a){
+    		targetTheta = 90;
+    	} else if (b){
+    		targetTheta = 360;
+    	} else if (x){
+    		targetTheta = 180;
+    	} else if (y){
+    		targetTheta = 270;
+    	} 
+    	int currentTheta = encoderUnitToAngle(rotateRBMotor.getEncPosition());
+    	//targetTheta = 5000;
+    	
+
+
+    	rotateRBMotor.set(angleToEncoderUnit((calculateTargetDeltaTheta(targetTheta, currentTheta))));
+    	SmartDashboard.putNumber("RotateLBMotor", rotateLBMotor.get());
+    	SmartDashboard.putNumber("Current Theta", currentTheta);
+    	SmartDashboard.putNumber("TargetDeltaTheta", calculateTargetDeltaTheta(targetTheta, currentTheta));
+    	SmartDashboard.putNumber("TargetTheta", targetTheta);
+    	SmartDashboard.putNumber("EncoderDelta", angleToEncoderUnit((calculateTargetDeltaTheta(targetTheta, currentTheta))));
+    	SmartDashboard.putNumber("Encoder Position", rotateRBMotor.getEncPosition());
+    }
     
     /*
 	public void move(double LY, double LX, double RX){//input the target angle position for wheel, current position of wheel, Talon for the rotating motor, CANTalon for drive motor

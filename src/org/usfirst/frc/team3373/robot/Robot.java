@@ -7,6 +7,7 @@ import com.kauailabs.nav6.frc.IMUAdvanced;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -42,6 +43,8 @@ public class Robot extends SampleRobot {
     PIDController pid;
     SwerveControl swerve;
     Deadband deadband;
+    CANTalon twoTalon;
+    DigitalInput magneticLimit;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -94,8 +97,10 @@ public class Robot extends SampleRobot {
         indexer = new Indexer();
         //servo = new Servo(2);
         swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, frontRightRotate, 
-        		                   backLeftDrive, backLeftRotate, backLeftDrive, backLeftRotate);
+        		                   backLeftDrive, backLeftRotate, backRightDrive, backRightRotate);
         deadband = new Deadband();
+        magneticLimit = new DigitalInput(0);
+        //twoTalon = new CANTalon(3);
 
         
 
@@ -104,15 +109,14 @@ public class Robot extends SampleRobot {
         
         AnalogInput pot = new AnalogInput(0);
         
-        //rotateTalon = new Talon(0);
-        //driveTalon.setPID(p,i,d);
+        //twoTalon.setPID(p,i,d);
         //pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
         
         
         
-        /*driveTalon.changeControlMode(CANTalon.ControlMode.Position);
-        driveTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        drivePos = driveTalon.getEncPosition();*/
+        //twoTalon.changeControlMode(CANTalon.ControlMode.Position);
+        //twoTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        //drivePos = driveTalon.getEncPosition();
 
         
         try {
@@ -198,8 +202,11 @@ public class Robot extends SampleRobot {
             
             
             //swerve.move(deadband.zero(stick1.getRawAxis(LY), .1), deadband.zero(stick1.getRawAxis(LX), .1), deadband.zero(stick1.getRawAxis(RX), 0));
-
+            swerve.move(stick1.isAHeld(), stick1.isBHeld(), stick1.isXHeld(), stick1.isYHeld());
+            //twoTalon.set(2000);
+            //SmartDashboard.putNumber("twoTalon", twoTalon.getEncPosition());
             Timer.delay(.01);
+            SmartDashboard.putBoolean("Limit", magneticLimit.get());
 
             stick1.clearButtons();
             stick2.clearButtons();
