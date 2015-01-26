@@ -45,6 +45,7 @@ public class Robot extends SampleRobot {
     Deadband deadband;
     CANTalon twoTalon;
     DigitalInput magneticLimit;
+    CANTalon actuator;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -104,6 +105,7 @@ public class Robot extends SampleRobot {
         		backRightRotate, robotWidth, robotLength);
         deadband = new Deadband();
         magneticLimit = new DigitalInput(0);
+        actuator = new CANTalon(0);
         //twoTalon = new CANTalon(3);
 
         
@@ -113,13 +115,13 @@ public class Robot extends SampleRobot {
         
         AnalogInput pot = new AnalogInput(0);
         
-        //twoTalon.setPID(p,i,d);
+        actuator.setPID(p,i,d);
         //pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
         
         
         
-        //twoTalon.changeControlMode(CANTalon.ControlMode.Position);
-        //twoTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        //actuator.changeControlMode(CANTalon.ControlMode.Position);
+        actuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
         //drivePos = driveTalon.getEncPosition();
 
         
@@ -205,17 +207,24 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            //swerve.calculateSwerveControl(stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            swerve.calculateSwerveControl(stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             
             SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Left Current Encoder Reading", swerve.FLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Back Right Current Encoder Reading", swerve.BRWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Right Current Encoder Reading", swerve.FRWheel.rotateMotor.getEncPosition());
             
-            //SmartDashboard.putNumber("twoTalon", twoTalon.getEncPosition());
+            SmartDashboard.putBoolean("fwdLimit", actuator.isFwdLimitSwitchClosed());
+            SmartDashboard.putBoolean("RevLimit", actuator.isRevLimitSwitchClosed());
             Timer.delay(.01);
             SmartDashboard.putBoolean("Limit", magneticLimit.get());
-
+            if (stick1.isAHeld()){
+            	actuator.set(.4);
+            } else if (stick1.isBHeld()){
+            	actuator.set(-.4);
+            } else {
+            	actuator.set(0);
+            }
             stick1.clearButtons();
             stick2.clearButtons();
     	}

@@ -24,6 +24,7 @@ public class SwerveWheel {
 		rotateMotor.setPID(p,i,d);
         rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
         rotateMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        rotateMotor.enableLimitSwitch(false, false);
         
         currentAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
         targetAngle = rotateMotor.getEncPosition();

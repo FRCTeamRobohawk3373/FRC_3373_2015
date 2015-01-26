@@ -26,11 +26,11 @@ public class SwerveControl  {
 	
 	int encoderUnitsPerRotation = 1665;
 	
-    double p = 5; //100 is very close
+    double p = 2; //100 is very close
     double i = 0;
-    double d = 0;
-    double f = 0;
-    int izone = 100;
+    double d = 5;
+    //double f = 0;
+    //int izone = 100;
     double ramprate = 36;
     int profile = 0;
     int drivePos = 1;
@@ -129,16 +129,24 @@ public class SwerveControl  {
     		wheel.getDeltaTheta();
     	}
     	
-    	for(SwerveWheel wheel : wheelArray){
-    		wheel.speed /= fastestSpeed;
+    	if(fastestSpeed > 1){
+    		for(SwerveWheel wheel : wheelArray){
+        		wheel.speed /= fastestSpeed;
+        	}	
     	}
     	
+    	
     	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FRWheel.getDeltaTheta()));
-    	FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FLWheel.getDeltaTheta()));
+    	//FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FLWheel.getDeltaTheta()));
     	BRWheel.rotateMotor.set(BRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(BRWheel.getDeltaTheta()));
     	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(BLWheel.getDeltaTheta()));
     	
     	//FRWheel.driveMotor.set(FRWheel.speed);
+    	//FLWheel.driveMotor.set(FRWheel.speed);
+    	//BRWheel.driveMotor.set(FRWheel.speed);
+    	//BLWheel.driveMotor.set(FRWheel.speed);
+    	
+    	
     	SmartDashboard.putNumber("Current Angle", BLWheel.currentAngle);
     	SmartDashboard.putNumber("Delta Theta", BLWheel.getDeltaTheta());
     	SmartDashboard.putNumber("Target Angle", BLWheel.targetAngle);
