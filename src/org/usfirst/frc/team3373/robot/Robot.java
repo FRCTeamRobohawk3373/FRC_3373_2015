@@ -43,9 +43,9 @@ public class Robot extends SampleRobot {
     PIDController pid;
     SwerveControl swerve;
     Deadband deadband;
-    CANTalon twoTalon;
+    //CANTalon twoTalon;
     DigitalInput magneticLimit;
-    CANTalon actuator;
+    //CANTalon actuator;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -105,8 +105,8 @@ public class Robot extends SampleRobot {
         		backRightRotate, robotWidth, robotLength);
         deadband = new Deadband();
         magneticLimit = new DigitalInput(0);
-        actuator = new CANTalon(0);
-        //twoTalon = new CANTalon(3);
+        //actuator = new CANTalon(0);
+        //twoTalon = new CANTalon(2);
 
         
 
@@ -115,13 +115,13 @@ public class Robot extends SampleRobot {
         
         AnalogInput pot = new AnalogInput(0);
         
-        actuator.setPID(p,i,d);
+        //actuator.setPID(p,i,d);
         //pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
         
         
         
-        //actuator.changeControlMode(CANTalon.ControlMode.Position);
-        actuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
+        //twoTalon.changeControlMode(CANTalon.ControlMode.Position);
+        //twoTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         //drivePos = driveTalon.getEncPosition();
 
         
@@ -214,17 +214,18 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber("Back Right Current Encoder Reading", swerve.BRWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Right Current Encoder Reading", swerve.FRWheel.rotateMotor.getEncPosition());
             
-            SmartDashboard.putBoolean("fwdLimit", actuator.isFwdLimitSwitchClosed());
-            SmartDashboard.putBoolean("RevLimit", actuator.isRevLimitSwitchClosed());
+            //SmartDashboard.putBoolean("fwdLimit", actuator.isFwdLimitSwitchClosed());
+            //SmartDashboard.putBoolean("RevLimit", actuator.isRevLimitSwitchClosed());
             Timer.delay(.01);
             SmartDashboard.putBoolean("Limit", magneticLimit.get());
-            if (stick1.isAHeld()){
-            	actuator.set(.4);
-            } else if (stick1.isBHeld()){
-            	actuator.set(-.4);
-            } else {
-            	actuator.set(0);
-            }
+            
+            
+            /*if (stick1.isAPushed()){
+            	twoTalon.set(20000);
+            } else if (stick1.isBPushed()){
+            	twoTalon.set(15000);
+            }*/
+            
             stick1.clearButtons();
             stick2.clearButtons();
     	}

@@ -41,8 +41,12 @@ public class SwerveWheel {
 				deltaTheta += 180;
 			}
 		}
+		if (deltaTheta >= 1 || deltaTheta <= -1){
+			return deltaTheta;
+		} else {
+			return 0;
+		}
 		
-		return deltaTheta;
 		
 	}
 	

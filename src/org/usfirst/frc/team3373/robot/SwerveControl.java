@@ -26,9 +26,9 @@ public class SwerveControl  {
 	
 	int encoderUnitsPerRotation = 1665;
 	
-    double p = 2; //100 is very close
+    double p = 10; //100 is very close
     double i = 0;
-    double d = 5;
+    double d = 0;
     //double f = 0;
     //int izone = 100;
     double ramprate = 36;
