@@ -56,10 +56,18 @@ public class SwerveControl  {
 		angleToDiagonal = Math.toDegrees(Math.atan2(length, width));
 		
 		
-		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal));
-		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90));
-		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270));
-		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal));
+		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 0);
+		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 0);
+		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 0);
+		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 0);
+		
+		/*
+		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (180 - angleToDiagonal), 0);
+		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal), 0);
+		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 180), 0);
+		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (0 - angleToDiagonal), 0);
+		*/
+		
 		
 		wheelArray = new SwerveWheel[]{FLWheel, FRWheel, BLWheel, BRWheel};
 	}
@@ -74,6 +82,7 @@ public class SwerveControl  {
 	
 	
     public int encoderUnitToAngle(int encoderValue){
+    	
     	double angle = 0;
     	if (encoderValue >= 0){
     		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
@@ -82,8 +91,8 @@ public class SwerveControl  {
     		angle = 360 - (encoderValue * (360.0/encoderUnitsPerRotation));
     		angle = angle % 360;
     	}
-    	return (int)angle;
-    }	
+    	return (int)angle;//(angle+2*(90-angle));
+    }
 	
     public int angleToEncoderUnit(double angle){//Only pass in deltaTheta
     	
@@ -125,7 +134,7 @@ public class SwerveControl  {
     			wheel.targetAngle += 360;
     		}
     		
-    		wheel.currentAngle = encoderUnitToAngle(wheel.rotateMotor.getEncPosition());
+    		wheel.currentAngle = encoderUnitToAngle(-wheel.rotateMotor.getEncPosition());
     		wheel.getDeltaTheta();
     	}
     	
@@ -136,10 +145,16 @@ public class SwerveControl  {
     	}
     	
     	
-    	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FRWheel.getDeltaTheta()));
-    	//FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(FLWheel.getDeltaTheta()));
-    	BRWheel.rotateMotor.set(BRWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(BRWheel.getDeltaTheta()));
-    	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() - angleToEncoderUnit(BLWheel.getDeltaTheta()));
+    	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta()));
+    	FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FLWheel.getDeltaTheta()));
+    	BRWheel.rotateMotor.set(BRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BRWheel.getDeltaTheta()));
+    	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BLWheel.getDeltaTheta()));
+    	
+    	
+    	//FRWheel.setSpeed();
+    	//FLWheel.setSpeed();
+    	//BRWheel.setSpeed();
+    	//BLWheel.setSpeed();
     	
     	//FRWheel.driveMotor.set(FRWheel.speed);
     	//FLWheel.driveMotor.set(FRWheel.speed);
@@ -150,6 +165,17 @@ public class SwerveControl  {
     	SmartDashboard.putNumber("Current Angle", BLWheel.currentAngle);
     	SmartDashboard.putNumber("Delta Theta", BLWheel.getDeltaTheta());
     	SmartDashboard.putNumber("Target Angle", BLWheel.targetAngle);
+    
+    }
+    
+    public void wheelsToHomePos(){
+    	for (SwerveWheel wheel : wheelArray){
+    		wheel.goToHome();
+    	}
+    	
+    	//FRWheel.goToHome();
+    	//BRWheel.goToHome();
+    	//BLWheel.goToHome();
     
     }
     

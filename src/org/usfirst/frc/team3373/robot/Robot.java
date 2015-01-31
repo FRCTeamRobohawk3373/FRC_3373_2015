@@ -149,7 +149,9 @@ public class Robot extends SampleRobot {
      * Drive left & right motors for 2 seconds then stop
      */
     public void autonomous() {
-
+    	
+    	swerve.wheelsToHomePos();
+    	
     }
 
     /**
@@ -207,12 +209,38 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            swerve.calculateSwerveControl(stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            
+            
+            SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
+            SmartDashboard.putNumber("LX: ", stick1.getRawAxis(LX));
+            SmartDashboard.putNumber("R: ", stick1.getRawAxis(RX));
+            
+            
+            //swerve.BLWheel.calibration(stick1.isAPushed());
+            
             
             SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Left Current Encoder Reading", swerve.FLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Back Right Current Encoder Reading", swerve.BRWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Right Current Encoder Reading", swerve.FRWheel.rotateMotor.getEncPosition());
+            
+            SmartDashboard.putNumber("TargetAngleFL: ", swerve.FLWheel.targetAngle);
+            SmartDashboard.putNumber("CurrentAngleFL", swerve.FLWheel.currentAngle);
+            
+            SmartDashboard.putNumber("TargetAngleFR: ", swerve.FRWheel.targetAngle);
+            SmartDashboard.putNumber("CurrentAngleFR: ", swerve.FRWheel.currentAngle);
+            
+            SmartDashboard.putNumber("TargetAngleBR: ", swerve.BRWheel.targetAngle);
+            SmartDashboard.putNumber("CurrentAngleBR: ", swerve.BRWheel.currentAngle);
+            
+            SmartDashboard.putNumber("TargetAngleBL: ", swerve.BLWheel.targetAngle);
+            SmartDashboard.putNumber("CurrentAngleBL: ", swerve.BLWheel.currentAngle);
+            
+            SmartDashboard.putNumber("SpeedFL: ", swerve.FLWheel.speed);
+            SmartDashboard.putNumber("SpeedFR: ", swerve.FRWheel.speed);
+            SmartDashboard.putNumber("SpeedBL: ", swerve.BLWheel.speed);
+            SmartDashboard.putNumber("SpeedBR: ", swerve.BRWheel.speed);
             
             //SmartDashboard.putBoolean("fwdLimit", actuator.isFwdLimitSwitchClosed());
             //SmartDashboard.putBoolean("RevLimit", actuator.isRevLimitSwitchClosed());
