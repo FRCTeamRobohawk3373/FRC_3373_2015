@@ -43,8 +43,7 @@ public class Robot extends SampleRobot {
     PIDController pid;
     SwerveControl swerve;
     Deadband deadband;
-    //CANTalon twoTalon;
-    DigitalInput magneticLimit;
+
     //CANTalon actuator;
     
     SerialPort serial_port;
@@ -104,10 +103,7 @@ public class Robot extends SampleRobot {
         		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
         		backRightRotate, robotWidth, robotLength);
         deadband = new Deadband();
-        magneticLimit = new DigitalInput(0);
         //actuator = new CANTalon(0);
-        //twoTalon = new CANTalon(2);
-
         
 
         //driveTalon = new CANTalon (0);
@@ -150,7 +146,7 @@ public class Robot extends SampleRobot {
      */
     public void autonomous() {
     	
-    	swerve.wheelsToHomePos();
+    	swerve.wheelsToZero();
     	
     }
 
@@ -161,6 +157,7 @@ public class Robot extends SampleRobot {
         
     	while (isOperatorControl() && isEnabled()) {
             
+    		
         	//SmartDashboard.putNumber("PIDError", pid.getError());
         	if (stick1.isAPushed()){
         		drivePos += 500;
@@ -209,7 +206,7 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            //swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
@@ -217,10 +214,10 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber("R: ", stick1.getRawAxis(RX));
             
             
-            //swerve.BLWheel.calibration(stick1.isAPushed());
+            swerve.FLWheel.calibration(stick1.isAPushed());
             
             
-            SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
+            /*SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Left Current Encoder Reading", swerve.FLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Back Right Current Encoder Reading", swerve.BRWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Right Current Encoder Reading", swerve.FRWheel.rotateMotor.getEncPosition());
@@ -240,14 +237,12 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber("SpeedFL: ", swerve.FLWheel.speed);
             SmartDashboard.putNumber("SpeedFR: ", swerve.FRWheel.speed);
             SmartDashboard.putNumber("SpeedBL: ", swerve.BLWheel.speed);
-            SmartDashboard.putNumber("SpeedBR: ", swerve.BRWheel.speed);
+            SmartDashboard.putNumber("SpeedBR: ", swerve.BRWheel.speed);*/
             
             //SmartDashboard.putBoolean("fwdLimit", actuator.isFwdLimitSwitchClosed());
             //SmartDashboard.putBoolean("RevLimit", actuator.isRevLimitSwitchClosed());
             Timer.delay(.01);
-            SmartDashboard.putBoolean("Limit", magneticLimit.get());
-            
-            
+
             /*if (stick1.isAPushed()){
             	twoTalon.set(20000);
             } else if (stick1.isBPushed()){

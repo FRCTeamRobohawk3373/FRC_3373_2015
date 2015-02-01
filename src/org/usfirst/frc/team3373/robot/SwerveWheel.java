@@ -33,6 +33,7 @@ public class SwerveWheel {
         currentAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
         targetAngle = rotateMotor.getEncPosition();
 		rAngle = rotateAngle;
+		offsetFromZero = distanceFromZero;
 	}
 	
 	public double getDeltaTheta(){
@@ -77,12 +78,18 @@ public class SwerveWheel {
 		rotateMotor.enableLimitSwitch(true, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		while(!rotateMotor.isFwdLimitSwitchClosed()){
-			rotateMotor.set(.5);
+			rotateMotor.set(.3);
 		}
 		rotateMotor.enableLimitSwitch(false, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
 		encoderAtZero = rotateMotor.getEncPosition();
 		SmartDashboard.putNumber("EncoderAtZero: ", encoderAtZero);
+	}
+	
+	public void goToZero(){
+		goToHome();
+		rotateMotor.setP(3);
+		rotateMotor.set(rotateMotor.getEncPosition() + offsetFromZero);
 	}
 	
 	

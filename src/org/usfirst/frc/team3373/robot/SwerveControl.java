@@ -56,10 +56,10 @@ public class SwerveControl  {
 		angleToDiagonal = Math.toDegrees(Math.atan2(length, width));
 		
 		
-		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 0);
-		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 0);
-		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 0);
-		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 0);
+		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 687);
+		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 687);
+		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 687);
+		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 687);
 		
 		/*
 		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (180 - angleToDiagonal), 0);
@@ -177,6 +177,13 @@ public class SwerveControl  {
     	//BRWheel.goToHome();
     	//BLWheel.goToHome();
     
+    }
+    public void wheelsToZero(){
+    	for (SwerveWheel wheel : wheelArray){
+    		wheel.goToZero();
+    		wheel.rotateMotor.setP(10);
+    	}
+    	
     }
     
     /*public double calculateTargetDeltaTheta(int targetAngle, int currentAngle){
