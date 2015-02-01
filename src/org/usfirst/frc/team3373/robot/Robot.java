@@ -90,8 +90,8 @@ public class Robot extends SampleRobot {
     int backLeftDrive = 2;
     int backRightDrive = 3;
     
-    double robotWidth = 1;
-    double robotLength = 1;
+    double robotWidth = 21;
+    double robotLength = 29;
     
     
     public Robot() {

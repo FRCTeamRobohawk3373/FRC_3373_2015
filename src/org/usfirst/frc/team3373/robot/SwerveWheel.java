@@ -13,7 +13,7 @@ public class SwerveWheel {
 	private double speed;
 	private int targetAngle;
 	private int encoderUnitsPerRotation = 1665;
-	private double speedModifier = 0.3;
+	private double speedModifier = 0.5;
 	private int encoderAtHome = 0;
 	private int offsetFromZero = 0;
 	private int directionalModifier = 1;
