@@ -70,6 +70,7 @@ public class SwerveControl  {
 		
 		
 		wheelArray = new SwerveWheel[]{FLWheel, FRWheel, BLWheel, BRWheel};
+		//wheelArray = new SwerveWheel[]{FRWheel};
 	}
 	
 	double deltaTheta;
@@ -80,7 +81,7 @@ public class SwerveControl  {
 	
 	
 	
-	
+	/*
     public int encoderUnitToAngle(int encoderValue){
     	
     	double angle = 0;
@@ -88,11 +89,13 @@ public class SwerveControl  {
     		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
     		angle = angle % 360;
     	} else if (encoderValue < 0){
-    		angle = 360 - (encoderValue * (360.0/encoderUnitsPerRotation));
+    		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
     		angle = angle % 360;
+    		angle += 360;
     	}
     	return (int)angle;//(angle+2*(90-angle));
     }
+    */
 	
     public int angleToEncoderUnit(double angle){//Only pass in deltaTheta
     	
@@ -115,41 +118,57 @@ public class SwerveControl  {
     	
     	for (SwerveWheel wheel : wheelArray){
     		
-    		rotateXComponent = Math.cos(Math.toRadians(wheel.rAngle)) * rotationMagnitude;
-    		rotateYComponent = Math.sin(Math.toRadians(wheel.rAngle)) * rotationMagnitude;
+    		rotateXComponent = Math.cos(Math.toRadians(wheel.getRAngle())) * rotationMagnitude;
+    		rotateYComponent = Math.sin(Math.toRadians(wheel.getRAngle())) * rotationMagnitude;
     		
     		if(rAxis > 0){
     			rotateXComponent = -rotateXComponent;
     			rotateYComponent = -rotateYComponent;
     		}
     		
-    		wheel.speed = Math.sqrt(Math.pow(rotateXComponent + xAxis, 2) + Math.pow((rotateYComponent + yAxis), 2));
-    		wheel.targetAngle = Math.toDegrees(Math.atan2((rotateYComponent + yAxis), (rotateXComponent + xAxis)));
+    		wheel.setSpeed(Math.sqrt(Math.pow(rotateXComponent + xAxis, 2) + Math.pow((rotateYComponent + yAxis), 2)));
+    		wheel.setTargetAngle(Math.toDegrees(Math.atan2((rotateYComponent + yAxis), (rotateXComponent + xAxis))));
     		
-    		if(wheel.speed > fastestSpeed){
-    			fastestSpeed = wheel.speed;
+    		if(wheel.getSpeed() > fastestSpeed){
+    			fastestSpeed = wheel.getSpeed();
     		}
     		
-    		if(wheel.targetAngle < 0){
-    			wheel.targetAngle += 360;
-    		}
-    		
-    		wheel.currentAngle = encoderUnitToAngle(-wheel.rotateMotor.getEncPosition());
-    		wheel.getDeltaTheta();
+    		//wheel.getDeltaTheta();
     	}
     	
     	if(fastestSpeed > 1){
     		for(SwerveWheel wheel : wheelArray){
-        		wheel.speed /= fastestSpeed;
-        	}	
+        		wheel.setSpeed(wheel.getSpeed()/fastestSpeed);
+        	}
     	}
     	
     	
     	
-    	double FRWheelTarget = FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta());
-    	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta()));
-    	SmartDashboard.putNumber("FR Target Encoder Position", (FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta())));
-    	SmartDashboard.putNumber("FR DeltaTheta: ", FRWheel.getDeltaTheta());
+    	//double FRWheelTarget = FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta());
+    	
+    	FRWheel.goToAngle();
+    	FLWheel.goToAngle();
+    	BRWheel.goToAngle();
+    	BLWheel.goToAngle();
+    	
+    	FRWheel.drive();
+    	FLWheel.drive();
+    	BRWheel.drive();
+    	BLWheel.drive();
+    	
+    	
+    	/*
+    	//.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta()));
+    	SmartDashboard.putNumber("FR Target Encoder Position", (FRWheel.getTargetAngle()));
+    	SmartDashboard.putNumber("FR DeltaTheta: ", angleToEncoderUnit(FRWheel.getDeltaTheta()));
+    	SmartDashboard.putNumber("FR Current Encoder", FRWheel.getCurrentAngle());
+    	try{
+    		//Thread.sleep(5000);
+    	}catch (Exception ex){
+    		
+    	}
+    	
+    	/*
     	FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FLWheel.getDeltaTheta()));
     	SmartDashboard.putNumber("FL Target Encoder Position", (FLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FLWheel.getDeltaTheta())));
     	SmartDashboard.putNumber("FL DeltaTheta: ", FLWheel.getDeltaTheta());
@@ -159,12 +178,9 @@ public class SwerveControl  {
     	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BLWheel.getDeltaTheta()));
     	SmartDashboard.putNumber("BL Target Encoder Position", (BLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BLWheel.getDeltaTheta())));
     	SmartDashboard.putNumber("BL DeltaTheta: ", BLWheel.getDeltaTheta());
+    	*/
     	
-    	
-    	FRWheel.setSpeed();
-    	FLWheel.setSpeed();
-    	BRWheel.setSpeed();
-    	BLWheel.setSpeed();
+
     	
     	//FRWheel.driveMotor.set(FRWheel.speed);
     	//FLWheel.driveMotor.set(FRWheel.speed);
@@ -172,9 +188,9 @@ public class SwerveControl  {
     	//BLWheel.driveMotor.set(FRWheel.speed);
     	
     	
-    	SmartDashboard.putNumber("Current Angle", BLWheel.currentAngle);
-    	SmartDashboard.putNumber("Delta Theta", BLWheel.getDeltaTheta());
-    	SmartDashboard.putNumber("Target Angle", BLWheel.targetAngle);
+    	//SmartDashboard.putNumber("Current Angle", BLWheel.getCurrentAngle());
+    	//SmartDashboard.putNumber("Delta Theta", BLWheel.getDeltaTheta());
+    	//SmartDashboard.putNumber("Target Angle", BLWheel.getTargetAngle());
     
     }
     
@@ -191,7 +207,7 @@ public class SwerveControl  {
     public void wheelsToZero(){
     	for (SwerveWheel wheel : wheelArray){
     		wheel.goToZero();
-    		wheel.rotateMotor.setP(10);
+    		//wheel.rotateMotor.setP(10);
     	}
     	
     }

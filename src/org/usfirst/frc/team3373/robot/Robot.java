@@ -179,7 +179,7 @@ public class Robot extends SampleRobot {
     	while (isTest() && isEnabled()){
     		//indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
     		//System.out.println("POV" + stick1.getPOV());
-    		
+    		/*
     		if (stick1.isAHeld()){
     			swerve.FRWheel.targetAngle += 5;
     		} else if (stick1.isBHeld()){
@@ -194,7 +194,8 @@ public class Robot extends SampleRobot {
 			double deltaBL = swerve.BLWheel.getDeltaTheta();
     			
     		double encoderFR = swerve.FRWheel.rotateMotor.getEncPosition();
-    			
+    		*/
+    		
             boolean is_calibrating = imu.isCalibrating();
             if ( first_iteration && !is_calibrating ) {
                 Timer.delay( 0.3 );
@@ -221,7 +222,7 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            //swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));

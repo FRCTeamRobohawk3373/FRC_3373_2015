@@ -6,18 +6,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveWheel {
 
-	Talon driveMotor;
-	CANTalon rotateMotor;
+	private Talon driveMotor;
+	private CANTalon rotateMotor;
 	
-	double rAngle;
-	double speed;
-	double targetAngle;
-	double currentAngle;
-	int encoderUnitsPerRotation = 1665;
-	double speedModifier = 0.3;
-	int encoderAtHome = 0;
-	int offsetFromZero = 0;
-	int directionalModifier = 1;
+	private double rAngle;
+	private double speed;
+	private int targetAngle;
+	private int encoderUnitsPerRotation = 1665;
+	private double speedModifier = 0.3;
+	private int encoderAtHome = 0;
+	private int offsetFromZero = 0;
+	private int directionalModifier = 1;
 
 	
 	
@@ -31,24 +30,29 @@ public class SwerveWheel {
         rotateMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         rotateMotor.enableLimitSwitch(false, false);
         
-        currentAngle = encoderUnitToAngle(-rotateMotor.getEncPosition());
         targetAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
 		rAngle = rotateAngle;
 		offsetFromZero = distanceFromZero;
 	}
 	
 	public double getDeltaTheta(){
-		double deltaTheta = targetAngle - currentAngle;
+		double deltaTheta = getTargetAngle() - getCurrentAngle();
 		
 		while ((deltaTheta < -90) || (deltaTheta > 90)){
 			if(deltaTheta > 90){
 				deltaTheta -= 180;
-				directionalModifier *= -1;
+				speed *= -1;
 			}else if(deltaTheta < -90){
 				deltaTheta += 180;
-				directionalModifier *= -1;
+				speed *= -1;
 			}
+			System.out.println(getTargetAngle());
+			System.out.println(getCurrentAngle());
+			System.out.println(deltaTheta);
 		}
+		
+		System.out.println("New values: ");
+		
 		if (deltaTheta >= 2 || deltaTheta <= -2){
 			return deltaTheta;
 		} else {
@@ -57,25 +61,71 @@ public class SwerveWheel {
 		
 	}
 	
+	public void setTargetAngle(double angle){
+		
+		if(angle < 0){
+			angle += 360;
+		}else if(angle >=360){
+			angle -= 360;
+		}
+		
+		targetAngle = (int)angle;
+	}
+	
+	public int getTargetAngle(){
+		return targetAngle;
+	}
+	
+	public int getCurrentAngle(){
+		return encoderUnitToAngle(-rotateMotor.getEncPosition());
+	}
+	
+	public int getRAngle(){
+		return (int)rAngle;
+	}
+	
+	public void goToAngle(){
+		rotateMotor.set(rotateMotor.getEncPosition() - angleToEncoderUnit(getDeltaTheta()));
+	}
+	
+	public void setSpeed(double magnitude){
+		speed = magnitude;
+	}
+	public double getSpeed(){
+		return speed;
+	}
+	
+	
+	
+	
+	
     public int encoderUnitToAngle(int encoderValue){
     	double angle = 0;
     	if (encoderValue >= 0){
     		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
     		angle = angle % 360;
     	} else if (encoderValue < 0){
-    		angle = 360 - (encoderValue * (360.0/encoderUnitsPerRotation));
-    		angle = angle % 360;
+    		angle = (encoderValue * (360.0/encoderUnitsPerRotation));
+    		angle = angle % 360 + 360;
     	}
     	return (int)angle;//(angle+2*(90-angle));
     }
     
-    public void setSpeed(){
+    public int angleToEncoderUnit(double angle){//Only pass in deltaTheta
+    	
+    	double deltaEncoder;
+    	deltaEncoder = angle*(encoderUnitsPerRotation/360.0); 
+    	
+    	return (int)deltaEncoder;
+    }
+    
+    public void drive(){
     	/*if(Math.abs(targetAngle-currentAngle) > 2)
     		driveMotor.set(speed*speedModifier);
     	else{
     		driveMotor.set(-speed*speedModifier);
     	}*/
-    	driveMotor.set(speed*speedModifier*directionalModifier);
+    	driveMotor.set(speed*speedModifier);//*directionalModifier
     }
 	
 	public void goToHome(){
