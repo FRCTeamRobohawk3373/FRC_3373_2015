@@ -17,6 +17,7 @@ public class SwerveWheel {
 	double speedModifier = 0.3;
 	int encoderAtHome = 0;
 	int offsetFromZero = 0;
+	int directionalModifier = 1;
 
 	
 	
@@ -30,8 +31,8 @@ public class SwerveWheel {
         rotateMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         rotateMotor.enableLimitSwitch(false, false);
         
-        currentAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
-        targetAngle = rotateMotor.getEncPosition();
+        currentAngle = encoderUnitToAngle(-rotateMotor.getEncPosition());
+        targetAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
 		rAngle = rotateAngle;
 		offsetFromZero = distanceFromZero;
 	}
@@ -42,8 +43,10 @@ public class SwerveWheel {
 		while ((deltaTheta < -90) || (deltaTheta > 90)){
 			if(deltaTheta > 90){
 				deltaTheta -= 180;
+				directionalModifier *= -1;
 			}else if(deltaTheta < -90){
 				deltaTheta += 180;
+				directionalModifier *= -1;
 			}
 		}
 		if (deltaTheta >= 2 || deltaTheta <= -2){
@@ -67,11 +70,12 @@ public class SwerveWheel {
     }
     
     public void setSpeed(){
-    	if(Math.abs(targetAngle-currentAngle) > 2)
+    	/*if(Math.abs(targetAngle-currentAngle) > 2)
     		driveMotor.set(speed*speedModifier);
     	else{
     		driveMotor.set(-speed*speedModifier);
-    	}
+    	}*/
+    	driveMotor.set(speed*speedModifier*directionalModifier);
     }
 	
 	public void goToHome(){

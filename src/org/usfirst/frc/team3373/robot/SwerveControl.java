@@ -145,10 +145,20 @@ public class SwerveControl  {
     	}
     	
     	
+    	
+    	double FRWheelTarget = FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta());
     	FRWheel.rotateMotor.set(FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta()));
+    	SmartDashboard.putNumber("FR Target Encoder Position", (FRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FRWheel.getDeltaTheta())));
+    	SmartDashboard.putNumber("FR DeltaTheta: ", FRWheel.getDeltaTheta());
     	FLWheel.rotateMotor.set(FLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FLWheel.getDeltaTheta()));
+    	SmartDashboard.putNumber("FL Target Encoder Position", (FLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(FLWheel.getDeltaTheta())));
+    	SmartDashboard.putNumber("FL DeltaTheta: ", FLWheel.getDeltaTheta());
     	BRWheel.rotateMotor.set(BRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BRWheel.getDeltaTheta()));
+    	SmartDashboard.putNumber("BR Target Encoder Position", (BRWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BRWheel.getDeltaTheta())));
+    	SmartDashboard.putNumber("BR DeltaTheta: ", BRWheel.getDeltaTheta());
     	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BLWheel.getDeltaTheta()));
+    	SmartDashboard.putNumber("BL Target Encoder Position", (BLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BLWheel.getDeltaTheta())));
+    	SmartDashboard.putNumber("BL DeltaTheta: ", BLWheel.getDeltaTheta());
     	
     	
     	FRWheel.setSpeed();

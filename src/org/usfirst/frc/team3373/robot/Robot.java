@@ -180,6 +180,21 @@ public class Robot extends SampleRobot {
     		//indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
     		//System.out.println("POV" + stick1.getPOV());
     		
+    		if (stick1.isAHeld()){
+    			swerve.FRWheel.targetAngle += 5;
+    		} else if (stick1.isBHeld()){
+    			swerve.FLWheel.targetAngle -= 5;
+    		}
+    		swerve.FRWheel.targetAngle = 358;
+    		double FRCurrentAngle = swerve.FRWheel.currentAngle = swerve.encoderUnitToAngle(-swerve.FRWheel.rotateMotor.getEncPosition());
+    		
+			double deltaFR = swerve.FRWheel.getDeltaTheta();
+			double deltaFL = swerve.FLWheel.getDeltaTheta();
+			double deltaBR = swerve.BRWheel.getDeltaTheta();
+			double deltaBL = swerve.BLWheel.getDeltaTheta();
+    			
+    		double encoderFR = swerve.FRWheel.rotateMotor.getEncPosition();
+    			
             boolean is_calibrating = imu.isCalibrating();
             if ( first_iteration && !is_calibrating ) {
                 Timer.delay( 0.3 );
@@ -206,7 +221,7 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            //swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
