@@ -14,8 +14,8 @@ public class SwerveWheel {
 	double targetAngle;
 	double currentAngle;
 	int encoderUnitsPerRotation = 1665;
-	double speedModifier = 0.5;
-	int encoderAtZero = 0;
+	double speedModifier = 0.3;
+	int encoderAtHome = 0;
 	int offsetFromZero = 0;
 
 	
@@ -78,28 +78,28 @@ public class SwerveWheel {
 		rotateMotor.enableLimitSwitch(true, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		while(!rotateMotor.isFwdLimitSwitchClosed()){
-			rotateMotor.set(.3);
+			rotateMotor.set(.5);
 		}
+		encoderAtHome = rotateMotor.getEncPosition();
 		rotateMotor.enableLimitSwitch(false, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
-		encoderAtZero = rotateMotor.getEncPosition();
-		SmartDashboard.putNumber("EncoderAtZero: ", encoderAtZero);
+		SmartDashboard.putNumber("EncoderAtZero: ", encoderAtHome);
 	}
 	
 	public void goToZero(){
 		goToHome();
 		rotateMotor.setP(3);
-		rotateMotor.set(rotateMotor.getEncPosition() + offsetFromZero);
+		rotateMotor.set(encoderAtHome + offsetFromZero);
 	}
 	
 	
     public void calibration(boolean saveValue){
-    	SmartDashboard.putNumber("OffsetFromHome To Zero: ", encoderAtZero);
+    	SmartDashboard.putNumber("OffsetFromHome To Zero: ", encoderAtHome);
     	SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
     	SmartDashboard.putNumber("CurrentAngle: ", encoderUnitToAngle(-rotateMotor.getEncPosition()));
     	
     	if (saveValue) {
-    		offsetFromZero = (encoderAtZero - rotateMotor.getEncPosition());
+    		offsetFromZero = (encoderAtHome - rotateMotor.getEncPosition());
     		SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
     	}
     }

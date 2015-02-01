@@ -151,10 +151,10 @@ public class SwerveControl  {
     	BLWheel.rotateMotor.set(BLWheel.rotateMotor.getEncPosition() + angleToEncoderUnit(BLWheel.getDeltaTheta()));
     	
     	
-    	//FRWheel.setSpeed();
-    	//FLWheel.setSpeed();
-    	//BRWheel.setSpeed();
-    	//BLWheel.setSpeed();
+    	FRWheel.setSpeed();
+    	FLWheel.setSpeed();
+    	BRWheel.setSpeed();
+    	BLWheel.setSpeed();
     	
     	//FRWheel.driveMotor.set(FRWheel.speed);
     	//FLWheel.driveMotor.set(FRWheel.speed);
