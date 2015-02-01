@@ -77,7 +77,7 @@ public class SwerveWheel {
 	}
 	
 	public int getCurrentAngle(){
-		return encoderUnitToAngle(-rotateMotor.getEncPosition());
+		return encoderUnitToAngle(rotateMotor.getEncPosition());
 	}
 	
 	public int getRAngle(){
@@ -85,7 +85,7 @@ public class SwerveWheel {
 	}
 	
 	public void goToAngle(){
-		rotateMotor.set(rotateMotor.getEncPosition() - angleToEncoderUnit(getDeltaTheta()));
+		rotateMotor.set(rotateMotor.getEncPosition() + angleToEncoderUnit(getDeltaTheta()));
 	}
 	
 	public void setSpeed(double magnitude){
@@ -150,7 +150,7 @@ public class SwerveWheel {
     public void calibration(boolean saveValue){
     	SmartDashboard.putNumber("OffsetFromHome To Zero: ", encoderAtHome);
     	SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
-    	SmartDashboard.putNumber("CurrentAngle: ", encoderUnitToAngle(-rotateMotor.getEncPosition()));
+    	SmartDashboard.putNumber("CurrentAngle: ", encoderUnitToAngle(rotateMotor.getEncPosition()));
     	
     	if (saveValue) {
     		offsetFromZero = (encoderAtHome - rotateMotor.getEncPosition());
