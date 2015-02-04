@@ -24,7 +24,7 @@ public class SwerveControl  {
 	Talon driveRBMotor;
 	CANTalon rotateRBMotor;
 	
-	int encoderUnitsPerRotation = 1665;
+	int encoderUnitsPerRotation = 1660;//was 1665
 	
     double p = 10; //100 is very close
     double i = 0;
@@ -194,6 +194,21 @@ public class SwerveControl  {
     
     }
     
+    public void changeOrientation(boolean north, boolean east, boolean south, boolean west){
+    	
+    	for (SwerveWheel wheel : wheelArray){
+    		if(north){
+    			wheel.setOrientationOffset(0);
+    		} else if(east){
+    			wheel.setOrientationOffset(90);
+    		} else if(south){
+    			wheel.setOrientationOffset(180);
+    		} else if(west){
+    			wheel.setOrientationOffset(270);
+    		}
+    	}
+    }
+    
     public void wheelsToHomePos(){
     	for (SwerveWheel wheel : wheelArray){
     		wheel.goToHome();
@@ -210,6 +225,13 @@ public class SwerveControl  {
     		//wheel.rotateMotor.setP(10);
     	}
     	
+    }
+    
+    public void test(){
+    	FRWheel.test();
+    	FLWheel.test();
+    	BLWheel.test();
+    	BRWheel.test();
     }
     
     /*public double calculateTargetDeltaTheta(int targetAngle, int currentAngle){

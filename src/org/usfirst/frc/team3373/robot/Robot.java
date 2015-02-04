@@ -157,16 +157,11 @@ public class Robot extends SampleRobot {
         
     	while (isOperatorControl() && isEnabled()) {
             
-    		
-        	//SmartDashboard.putNumber("PIDError", pid.getError());
-        	if (stick1.isAPushed()){
-        		drivePos += 500;
-        	} else if (stick1.isBPushed()){
-        		drivePos -= 500;
-        	}
-    		//driveTalon.set(drivePos);
+    		swerve.test();
         	
-    		Timer.delay(0.005);		// wait for a motor update time
+    		SmartDashboard.putNumber("Encoder Reading: ", swerve.FRWheel.rotateMotor.getEncPosition());
+    		
+    		Timer.delay(0.005);
     		stick1.clearButtons();
     		stick2.clearButtons();
         }
@@ -223,7 +218,7 @@ public class Robot extends SampleRobot {
             
             
             swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
-            
+            swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
             SmartDashboard.putNumber("LX: ", stick1.getRawAxis(LX));

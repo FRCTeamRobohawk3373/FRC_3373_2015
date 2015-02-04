@@ -7,16 +7,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class SwerveWheel {
 
 	private Talon driveMotor;
-	private CANTalon rotateMotor;
+	public CANTalon rotateMotor;
 	
 	private double rAngle;
 	private double speed;
 	private int targetAngle;
-	private int encoderUnitsPerRotation = 1665;
+	private int encoderUnitsPerRotation = 1660;//was 1665
 	private double speedModifier = 0.5;
 	private int encoderAtHome = 0;
 	private int offsetFromZero = 0;
 	private int directionalModifier = 1;
+	private int orientationOffset = 0;
 
 	
 	
@@ -46,9 +47,6 @@ public class SwerveWheel {
 				deltaTheta += 180;
 				speed *= -1;
 			}
-			System.out.println(getTargetAngle());
-			System.out.println(getCurrentAngle());
-			System.out.println(deltaTheta);
 		}
 		
 		System.out.println("New values: ");
@@ -63,13 +61,15 @@ public class SwerveWheel {
 	
 	public void setTargetAngle(double angle){
 		
+		//angle += orientationOffset; this does not work
+		
 		if(angle < 0){
 			angle += 360;
 		}else if(angle >=360){
 			angle -= 360;
 		}
 		
-		targetAngle = (int)angle;
+		targetAngle = (int)angle ;
 	}
 	
 	public int getTargetAngle(){
@@ -93,6 +93,9 @@ public class SwerveWheel {
 	}
 	public double getSpeed(){
 		return speed;
+	}
+	public void setOrientationOffset(int offset){
+		orientationOffset = offset;
 	}
 	
 	
@@ -125,6 +128,7 @@ public class SwerveWheel {
     	else{
     		driveMotor.set(-speed*speedModifier);
     	}*/
+    	SmartDashboard.putNumber("Speed: " + this.toString(), speed*speedModifier);
     	driveMotor.set(speed*speedModifier);//*directionalModifier
     }
 	
@@ -156,6 +160,9 @@ public class SwerveWheel {
     		offsetFromZero = (encoderAtHome - rotateMotor.getEncPosition());
     		SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
     	}
+    }
+    public void test(){
+    	rotateMotor.set(encoderUnitsPerRotation*10);
     }
 
 	
