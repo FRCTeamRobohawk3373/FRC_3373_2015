@@ -146,7 +146,7 @@ public class Robot extends SampleRobot {
      */
     public void autonomous() {
     	
-    	swerve.wheelsToZero();
+    	swerve.wheelsToHomePos();
     	
     }
 
@@ -219,6 +219,10 @@ public class Robot extends SampleRobot {
             
             swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
+            
+            if(stick1.isLStickPushed()){
+            	swerve.switchDrivingMode();//toggles between field and robot centric
+            }
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
             SmartDashboard.putNumber("LX: ", stick1.getRawAxis(LX));

@@ -51,11 +51,11 @@ public class SwerveWheel {
 		
 		System.out.println("New values: ");
 		
-		if (deltaTheta >= 2 || deltaTheta <= -2){
+		//if (deltaTheta >= 1 || deltaTheta <= -1){
 			return deltaTheta;
-		} else {
-			return 0;
-		}
+		//} else {
+		//	return 0;
+		//}
 		
 	}
 	
@@ -136,7 +136,10 @@ public class SwerveWheel {
 		rotateMotor.enableLimitSwitch(true, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		while(!rotateMotor.isFwdLimitSwitchClosed()){
-			rotateMotor.set(.5);
+			rotateMotor.set(.2);
+		}
+		while(rotateMotor.isFwdLimitSwitchClosed()){
+			rotateMotor.set(-0.2);
 		}
 		encoderAtHome = rotateMotor.getEncPosition();
 		rotateMotor.enableLimitSwitch(false, false);
