@@ -49,7 +49,7 @@ public class Lifter {
 		
 		//Sets value to be fed to CANTalons (Position in this case, v -1 to 1 speed)
 		rightActuator.changeControlMode(CANTalon.ControlMode.Position);
-		leftActuator.changeControlMode(CANTalon.ControlMode.Position);
+		leftActuator.changeControlMode(CANTalon.ControlMode.Follower);
 		
 		//Sets main type of sensor available on the CANBus
 		rightActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
@@ -61,8 +61,8 @@ public class Lifter {
 	 * @param targetPos position from 0-5 volts the lifter needs to go to
 	 */
 	public void goToPosition(double targetPos){
-			rightActuator.set(targetPos);
-			leftActuator.set(targetPos - offset);
+			rightActuator.set(heightToPosition(targetPos));
+			leftActuator.set(rightActuator.getDeviceID());
 	}
 	
 	/**
