@@ -90,8 +90,8 @@ public class Robot extends SampleRobot {
     int backLeftDrive = 2;
     int backRightDrive = 3;
     
-    double robotWidth = 1;
-    double robotLength = 1;
+    double robotWidth = 21;
+    double robotLength = 29;
     
     
     public Robot() {
@@ -146,7 +146,7 @@ public class Robot extends SampleRobot {
      */
     public void autonomous() {
     	
-    	swerve.wheelsToZero();
+    	swerve.wheelsToHomePos();
     	
     }
 
@@ -157,16 +157,11 @@ public class Robot extends SampleRobot {
         
     	while (isOperatorControl() && isEnabled()) {
             
-    		
-        	//SmartDashboard.putNumber("PIDError", pid.getError());
-        	if (stick1.isAPushed()){
-        		drivePos += 500;
-        	} else if (stick1.isBPushed()){
-        		drivePos -= 500;
-        	}
-    		//driveTalon.set(drivePos);
+    		swerve.test();
         	
-    		Timer.delay(0.005);		// wait for a motor update time
+    		SmartDashboard.putNumber("Encoder Reading: ", swerve.FRWheel.rotateMotor.getEncPosition());
+    		
+    		Timer.delay(0.005);
     		stick1.clearButtons();
     		stick2.clearButtons();
         }
@@ -179,7 +174,7 @@ public class Robot extends SampleRobot {
     	while (isTest() && isEnabled()){
     		//indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
     		//System.out.println("POV" + stick1.getPOV());
-    		
+    		/*
     		if (stick1.isAHeld()){
     			swerve.FRWheel.targetAngle += 5;
     		} else if (stick1.isBHeld()){
@@ -194,7 +189,8 @@ public class Robot extends SampleRobot {
 			double deltaBL = swerve.BLWheel.getDeltaTheta();
     			
     		double encoderFR = swerve.FRWheel.rotateMotor.getEncPosition();
-    			
+    		*/
+    		
             boolean is_calibrating = imu.isCalibrating();
             if ( first_iteration && !is_calibrating ) {
                 Timer.delay( 0.3 );
@@ -221,8 +217,12 @@ public class Robot extends SampleRobot {
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
             
-            //swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
             
+            if(stick1.isLStickPushed()){
+            	swerve.switchDrivingMode();//toggles between field and robot centric
+            }
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
             SmartDashboard.putNumber("LX: ", stick1.getRawAxis(LX));
