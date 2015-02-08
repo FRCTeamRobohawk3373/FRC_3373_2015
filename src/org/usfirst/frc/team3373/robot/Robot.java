@@ -228,7 +228,7 @@ public class Robot extends SampleRobot {
             
             swerve.FRWheel.calibration(stick1.isAPushed());*/
             
-            //CENTRICITY Control
+            //CENTRICITY Control aka switching robot modes
             if(stick1.isLStickPushed()){
             	swerve.switchToFieldCentric();
             }
