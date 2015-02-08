@@ -1,6 +1,7 @@
 package org.usfirst.frc.team3373.robot;
 
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -8,6 +9,7 @@ public class SwerveWheel {
 
 	private Talon driveMotor;
 	public CANTalon rotateMotor;
+	private DigitalInput limitSwitch;
 	
 	private double rAngle;
 	private double speed;
@@ -21,15 +23,18 @@ public class SwerveWheel {
 
 	
 	
-	public SwerveWheel(int driveMotorChannel, int rotateMotorID, double p, double i, double d, double rotateAngle, int distanceFromZero){
+	public SwerveWheel(int driveMotorChannel, int rotateMotorID, double p, double i, double d, double rotateAngle, int distanceFromZero, int limitSwitchChannel){
 		
 		driveMotor = new Talon(driveMotorChannel);
 		rotateMotor = new CANTalon(rotateMotorID);
+		
+		limitSwitch = new DigitalInput(limitSwitchChannel);
 		
 		rotateMotor.setPID(p,i,d);
         rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
         rotateMotor.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         rotateMotor.enableLimitSwitch(false, false);
+        rotateMotor.enableBrakeMode(true);
         
         targetAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
 		rAngle = rotateAngle;
@@ -131,39 +136,54 @@ public class SwerveWheel {
     	SmartDashboard.putNumber("Speed: " + this.toString(), speed*speedModifier);
     	driveMotor.set(speed*speedModifier);//*directionalModifier
     }
-	
+	/*
 	public void goToHome(){
 		rotateMotor.enableLimitSwitch(true, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		while(!rotateMotor.isFwdLimitSwitchClosed()){
 			rotateMotor.set(.2);
 		}
-		while(rotateMotor.isFwdLimitSwitchClosed()){
-			rotateMotor.set(-0.2);
-		}
 		encoderAtHome = rotateMotor.getEncPosition();
 		rotateMotor.enableLimitSwitch(false, false);
+		
 		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
-		SmartDashboard.putNumber("EncoderAtZero: ", encoderAtHome);
+		rotateMotor.set(encoderAtHome);
+	}*/
+    
+	public void goToHome(){
+		//rotateMotor.enableLimitSwitch(true, false);
+		rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
+		while(limitSwitch.get()){
+			rotateMotor.set(.1);
+		}
+		encoderAtHome = rotateMotor.getEncPosition();
+		SmartDashboard.putNumber("Encoder At Home: ", encoderAtHome);
+		rotateMotor.set(0);
+		rotateMotor.enableLimitSwitch(false, false);
+		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
 	}
 	
-	public void goToZero(){
-		goToHome();
-		rotateMotor.setP(3);
-		rotateMotor.set(encoderAtHome + offsetFromZero);
-	}
-	
-	
-    public void calibration(boolean saveValue){
-    	SmartDashboard.putNumber("OffsetFromHome To Zero: ", encoderAtHome);
+	public void calibration(boolean saveValue){
+    	SmartDashboard.putNumber("Encoder At Home: ", encoderAtHome);
     	SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
     	SmartDashboard.putNumber("CurrentAngle: ", encoderUnitToAngle(rotateMotor.getEncPosition()));
-    	
+		SmartDashboard.putNumber("Distance from Zero", encoderAtHome - rotateMotor.getEncPosition());
+		
     	if (saveValue) {
     		offsetFromZero = (encoderAtHome - rotateMotor.getEncPosition());
     		SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
     	}
     }
+	
+	public void goToZero(){
+		goToHome();
+		rotateMotor.setP(2);
+		rotateMotor.setD(10);
+		rotateMotor.set(encoderAtHome - 188);
+	}
+	
+	
+    
     public void test(){
     	rotateMotor.set(encoderUnitsPerRotation*10);
     }

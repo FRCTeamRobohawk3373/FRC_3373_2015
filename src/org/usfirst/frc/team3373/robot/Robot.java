@@ -93,6 +93,8 @@ public class Robot extends SampleRobot {
     double robotWidth = 21;
     double robotLength = 29;
     
+    boolean haveRun;
+    
     
     public Robot() {
         stick1 = new SuperJoystick(0);
@@ -109,7 +111,8 @@ public class Robot extends SampleRobot {
         //driveTalon = new CANTalon (0);
 
         
-        AnalogInput pot = new AnalogInput(0);
+        
+        haveRun = false;
         
         //actuator.setPID(p,i,d);
         //pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
@@ -146,7 +149,7 @@ public class Robot extends SampleRobot {
      */
     public void autonomous() {
     	
-    	swerve.wheelsToHomePos();
+    	swerve.wheelsToZero();
     	
     }
 
@@ -216,20 +219,38 @@ public class Robot extends SampleRobot {
             SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
             SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());*/
             
-            
-            swerve.calculateSwerveControl(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
-            swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
-            
-            if(stick1.isLStickPushed()){
-            	swerve.switchDrivingMode();//toggles between field and robot centric
+            /*
+            if(haveRun != true){
+            	swerve.FRWheel.goToHome();
+            	haveRun = true;
             }
+            
+            
+            swerve.FRWheel.calibration(stick1.isAPushed());*/
+            
+            //CENTRICITY Control
+            if(stick1.isLStickPushed()){
+            	swerve.switchToFieldCentric();
+            }
+            if(stick1.isRStickPushed()){
+            	swerve.switchToObjectCentric();
+            }
+            if(stick1.isStartPushed()){
+            	swerve.switchToRobotCentric();
+            }
+            
+            
+            swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
+            swerve.move(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            
+
             
             SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
             SmartDashboard.putNumber("LX: ", stick1.getRawAxis(LX));
             SmartDashboard.putNumber("R: ", stick1.getRawAxis(RX));
             
             
-            //swerve.FLWheel.calibration(stick1.isAPushed());
+            
             
             
             /*SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
