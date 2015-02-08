@@ -1,0 +1,39 @@
+#This is a file that will define the scripting language for autonomous paths
+
+#Moves to new relative position (X Position, Y Position, Degrees Rotation)
+newPos(5, 0, 0);
+newPos(4, 5, 0);
+newPos(0, 0, 90);
+newPos(5, -5, -45);
+
+#Moves to the coordinates (5, 5) on the field with zero degrees rotation
+newPos($5, $5, $0);
+newPos($15, $20, $180);
+
+#Circle Object (radius, angle)
+rotate(3, 90);
+rotate(4, $45);
+
+#Drive Until..
+sonarDrive(2); #Until sonar reads 2 feet
+
+#Waits (seconds)
+wait(0.5);
+wait(4);
+
+#Lifts to a given tote height
+lift(3);
+lift(1);
+
+#Actuates Intake
+intake("open");
+intake("closed");
+intake("off");
+intake("in");
+intake("out");
+intake("clockwise");
+intake("counterclockwise");
+
+#Activate Can Grabber
+canGrabber("raise");
+canGrabber("lower");
