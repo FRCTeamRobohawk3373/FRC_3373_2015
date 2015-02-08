@@ -4,6 +4,7 @@ import com.kauailabs.nav6.frc.IMUAdvanced;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -41,7 +42,13 @@ public class SwerveControl  {
     //int izone = 100;
 
     double orientationOffset;
+    
+    //Used to switch between control modes
+    boolean isRobotCentric = true;
     boolean isFieldCentric = false;
+    boolean isObjectCentric = false;
+    
+    double radius = 40;
     
 	SwerveWheel[] wheelArray;
 
@@ -51,6 +58,8 @@ public class SwerveControl  {
 	SwerveWheel BRWheel;
 	
 	double angleToDiagonal;
+	double robotLength;
+	double robotWidth;
 	
 	/*give dimensions between the wheels both width and length, 
 	 * width is the distance between left wheels and right wheels,
@@ -60,14 +69,16 @@ public class SwerveControl  {
 			int frontRightRotateID, int backLeftDriveChannel, int backLeftRotateID, int backRightDriveChannel,
 			int backRightRotateID, double width, double length){
 		
-			
+		robotWidth = width;
+		robotLength = length;
+		
 		angleToDiagonal = Math.toDegrees(Math.atan2(length, width));
 		
 		
-		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 687);
-		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 687);
-		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 687);
-		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 687);
+		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 687,1);
+		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 687,0);
+		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 687,2);
+		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 687,3);
 		
 		/*
 		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (180 - angleToDiagonal), 0);
@@ -134,6 +145,15 @@ public class SwerveControl  {
     	return (int)deltaEncoder;
     }
     
+    public void move(double LY, double LX, double RX){
+    	if(isFieldCentric || isRobotCentric){
+    		calculateSwerveControl(LY, LX, RX);
+    	} else {
+    		calculateObjectControl(RX);
+    	}
+    }
+    
+    
     public void calculateSwerveControl(double LY, double LX, double RX){
     	double translationalXComponent = LX;
     	double translationalYComponent = LY;
@@ -144,6 +164,19 @@ public class SwerveControl  {
     	double rotateXComponent;
     	double rotateYComponent;
     	double fastestSpeed = 0;
+    	
+    	if(Math.abs(LX) < 0.1){
+    		translationalXComponent = 0;
+    	}
+    	
+    	if(Math.abs(LY) < 0.1){
+    		translationalYComponent = 0;
+    	}
+    	
+    	if(Math.abs(RX) < 0.1){
+    		rAxis = 0;
+    	}
+    	
     	
     	if(isFieldCentric){
     		orientationOffset = imu.getYaw();
@@ -244,42 +277,124 @@ public class SwerveControl  {
     
     }
     
+    public void calculateObjectControl(double RX){
+    	double distanceToFront = radius - robotLength/2;
+    	double distanceToBack = radius + robotLength/2;
+    	
+    	System.out.println("WE MADE IT");
+    	
+    	FLWheel.setTargetAngle(180 - Math.toDegrees(Math.atan2(robotWidth/2, distanceToFront)));
+    	FRWheel.setTargetAngle(180 + Math.toDegrees(Math.atan2(robotWidth/2, distanceToFront)));
+    	BLWheel.setTargetAngle(180 - Math.toDegrees(Math.atan2(robotWidth/2, distanceToBack)));
+    	BRWheel.setTargetAngle(180 + Math.toDegrees(Math.atan2(robotWidth/2, distanceToBack)));
+    	
+    	BLWheel.setSpeed(RX);
+    	BRWheel.setSpeed(RX);
+    	
+    	double speedRatio = Math.sqrt(Math.pow((robotWidth/2), 2) + Math.pow(distanceToFront, 2)) / Math.sqrt(Math.pow((robotWidth/2), 2) + Math.pow(distanceToBack, 2));
+    	
+    	FLWheel.setSpeed(speedRatio * RX);
+    	FRWheel.setSpeed(speedRatio * RX);
+    	
+    	FRWheel.goToAngle();
+    	FLWheel.goToAngle();
+    	BRWheel.goToAngle();
+    	BLWheel.goToAngle();
+    	
+    	FRWheel.drive();
+    	FLWheel.drive();
+    	BRWheel.drive();
+    	BLWheel.drive();
+    	
+    }
+    
+    public void changeRadius(){
+    	
+    }
+
+    
     public void changeOrientation(boolean north, boolean east, boolean south, boolean west){
     	
     	//switch out of field centric
-    	isFieldCentric = false;
     	//set the robot front (N,E,S,W)
     	if(north){
+    		isFieldCentric = false;
+    		isObjectCentric = false;
     		orientationOffset = 0;
    		} else if(east){
+   			isFieldCentric = false;
+   			isObjectCentric = false;
    			orientationOffset = -90;
    		} else if(south){
+   			isFieldCentric = false;
+   			isObjectCentric = false;
     		orientationOffset = 180;
     	} else if(west){
+    		isFieldCentric = false;
+    		isObjectCentric = false;
     		orientationOffset = 90;
     	}
     	
     }
-    public void switchDrivingMode(){
-    	isFieldCentric = !isFieldCentric;
+    public void switchToFieldCentric(){
+		isObjectCentric = false;
+		isRobotCentric = false;
+		isFieldCentric = true;
     }
+    public void switchToObjectCentric(){
+		isObjectCentric = true;
+		isFieldCentric = false;
+		isRobotCentric = false;
+    }
+    
+    public void switchToRobotCentric(){
+		isObjectCentric = false;
+		isFieldCentric = false;
+		isRobotCentric = true;
+    }
+    
+    /*
+    public void switchDrivingMode(boolean LStick, boolean RStick){
+    	if(LStick && !isFieldCentric){
+    		isObjectCentric = false;
+    		isRobotCentric = false;
+    		isFieldCentric = true;
+    	} else if(LStick && isFieldCentric){
+    		isObjectCentric = false;
+    		isFieldCentric = false;
+    		isRobotCentric = true;
+    	} else if(RStick && !isObjectCentric){
+    		isObjectCentric = true;
+    		isFieldCentric = false;
+    		isRobotCentric = false;
+    	} else if(RStick && isObjectCentric){
+    		isObjectCentric = false;
+    		isFieldCentric = false;
+    		isRobotCentric = true;
+    	} else{
+    		isObjectCentric = false;
+    		isFieldCentric = false;
+    		isRobotCentric = true;    		
+    	}
+    }*/
     
     
     public void wheelsToHomePos(){
-    	for (SwerveWheel wheel : wheelArray){
+    	/*for (SwerveWheel wheel : wheelArray){
     		wheel.goToHome();
-    	}
-    	
+    	}*/
+    	FRWheel.goToHome();
     	//FRWheel.goToHome();
     	//BRWheel.goToHome();
     	//BLWheel.goToHome();
     
     }
     public void wheelsToZero(){
-    	for (SwerveWheel wheel : wheelArray){
+    	FRWheel.goToZero();
+    	/*for (SwerveWheel wheel : wheelArray){
     		wheel.goToZero();
     		//wheel.rotateMotor.setP(10);
-    	}
+    	}*/
     	
     }
     
