@@ -160,9 +160,6 @@ public class Robot extends SampleRobot {
         
     	while (isOperatorControl() && isEnabled()) {
             
-    		swerve.test();
-        	
-    		SmartDashboard.putNumber("Encoder Reading: ", swerve.FRWheel.rotateMotor.getEncPosition());
     		
     		Timer.delay(0.005);
     		stick1.clearButtons();

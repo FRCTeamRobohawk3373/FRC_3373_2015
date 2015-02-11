@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class SwerveWheel {
 
 	private Talon driveMotor;
-	public CANTalon rotateMotor;
+	private CANTalon rotateMotor;
 	private DigitalInput limitSwitch;
 	
 	private double rAngle;
@@ -53,8 +53,6 @@ public class SwerveWheel {
 				speed *= -1;
 			}
 		}
-		
-		System.out.println("New values: ");
 		
 		//if (deltaTheta >= 1 || deltaTheta <= -1){
 			return deltaTheta;
