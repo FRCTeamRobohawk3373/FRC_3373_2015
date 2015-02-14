@@ -7,9 +7,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveWheel {
 
-	private Talon driveMotor;
+	public Talon driveMotor; //private Talon driveMotor;
 	private CANTalon rotateMotor;
-	private DigitalInput limitSwitch;
 	
 	private double rAngle;
 	private double speed;
@@ -17,18 +16,14 @@ public class SwerveWheel {
 	private int encoderUnitsPerRotation = 1660;//was 1665
 	private double speedModifier = 0.5;
 	private int encoderAtHome = 0;
-	private int offsetFromZero = 0;
-	private int directionalModifier = 1;
-	private int orientationOffset = 0;
+	private int homeToZero = 0;
 
 	
-	
-	public SwerveWheel(int driveMotorChannel, int rotateMotorID, double p, double i, double d, double rotateAngle, int distanceFromZero, int limitSwitchChannel){
+	//orientation is negative 1, if banebots are facing forwards, orientation is 1 if the banebots are facing backwards
+	public SwerveWheel(int driveMotorChannel, int rotateMotorID, double p, double i, double d, double rotateAngle, int distanceFromZero){
 		
 		driveMotor = new Talon(driveMotorChannel);
 		rotateMotor = new CANTalon(rotateMotorID);
-		
-		limitSwitch = new DigitalInput(limitSwitchChannel);
 		
 		rotateMotor.setPID(p,i,d);
         rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
@@ -38,7 +33,7 @@ public class SwerveWheel {
         
         targetAngle = encoderUnitToAngle(rotateMotor.getEncPosition());
 		rAngle = rotateAngle;
-		offsetFromZero = distanceFromZero;
+		homeToZero = distanceFromZero;
 	}
 	
 	public double getDeltaTheta(){
@@ -80,7 +75,9 @@ public class SwerveWheel {
 	}
 	
 	public int getCurrentAngle(){
-		return encoderUnitToAngle(rotateMotor.getEncPosition());
+		//system.out.println(encoderUnitToAngle(getEncoderValue()));
+		return encoderUnitToAngle(getEncoderValue());
+		//return encoderUnitToAngle(rotateMotor.getEncPosition());
 	}
 	
 	public int getRAngle(){
@@ -88,7 +85,8 @@ public class SwerveWheel {
 	}
 	
 	public void goToAngle(){
-		rotateMotor.set(rotateMotor.getEncPosition() + angleToEncoderUnit(getDeltaTheta()));
+		rotateMotor.set(getEncoderValue() + angleToEncoderUnit(getDeltaTheta()));
+		//rotateMotor.set(rotateMotor.getEncPosition() + angleToEncoderUnit(getDeltaTheta()));
 	}
 	
 	public void setSpeed(double magnitude){
@@ -97,9 +95,10 @@ public class SwerveWheel {
 	public double getSpeed(){
 		return speed;
 	}
-	public void setOrientationOffset(int offset){
-		orientationOffset = offset;
+	public int getEncoderValue(){
+		return rotateMotor.getEncPosition();// - homeToZero;
 	}
+
 	
 	
 	
@@ -151,8 +150,8 @@ public class SwerveWheel {
 	public void goToHome(){
 		//rotateMotor.enableLimitSwitch(true, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
-		while(limitSwitch.get()){
-			rotateMotor.set(.1);
+		while(!rotateMotor.isFwdLimitSwitchClosed()){
+			rotateMotor.set(.15);
 		}
 		encoderAtHome = rotateMotor.getEncPosition();
 		SmartDashboard.putNumber("Encoder At Home: ", encoderAtHome);
@@ -160,7 +159,7 @@ public class SwerveWheel {
 		rotateMotor.enableLimitSwitch(false, false);
 		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);
 	}
-	
+	/*
 	public void calibration(boolean saveValue){
     	SmartDashboard.putNumber("Encoder At Home: ", encoderAtHome);
     	SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
@@ -171,13 +170,18 @@ public class SwerveWheel {
     		offsetFromZero = (encoderAtHome - rotateMotor.getEncPosition());
     		SmartDashboard.putNumber("OffsetSavedValue", offsetFromZero);
     	}
-    }
+    }*/
 	
 	public void goToZero(){
 		goToHome();
-		rotateMotor.setP(2);
-		rotateMotor.setD(10);
-		rotateMotor.set(encoderAtHome - 188);
+		rotateMotor.setP(5);
+		rotateMotor.setD(8);
+		rotateMotor.set(encoderAtHome - homeToZero);
+		/*
+		while(rotateMotor.getEncPosition() - (encoderAtHome) <= 2){
+			//wait
+		}
+		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);*/
 	}
 	
 	

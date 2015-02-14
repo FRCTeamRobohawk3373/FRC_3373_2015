@@ -43,6 +43,11 @@ public class Robot extends SampleRobot {
     PIDController pid;
     SwerveControl swerve;
     Deadband deadband;
+    DigitalInput ones;
+    DigitalInput twos;
+    DigitalInput fours;
+    DigitalInput eights;
+    
 
     //CANTalon actuator;
     
@@ -99,12 +104,19 @@ public class Robot extends SampleRobot {
     public Robot() {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
-        indexer = new Indexer();
+        indexer = new Indexer(9, 10, 8, 1);
         //servo = new Servo(2);
         swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
         		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
         		backRightRotate, robotWidth, robotLength);
         deadband = new Deadband();
+        
+        //LimitSwitches for Auto selector
+        ones = new DigitalInput(6);
+        twos = new DigitalInput(7);
+        fours = new DigitalInput(8);
+        eights = new DigitalInput(9);
+        
         //actuator = new CANTalon(0);
         
 
@@ -148,8 +160,68 @@ public class Robot extends SampleRobot {
      * Drive left & right motors for 2 seconds then stop
      */
     public void autonomous() {
+    	/*
+    	int index = 17;//for testing purposes
+    	if(ones.get()){
+    		index += 1;
+    	}
+    	if(twos.get()){
+    		index += 2;
+    	}
+    	if(fours.get()){
+    		index += 4;
+    	}
+    	if(eights.get()){
+    		index += 8;
+    	}
+    	System.out.println(index);
+    	switch(index){
+    		case 0:
+    			break;
+    		case 1:
+    			break;
+    		case 2:
+    			break;
+    		case 3:
+    			break;
+    		case 4:
+    			break;
+    		case 5:
+    			break;
+    		case 6:
+    			break;
+    		case 7:
+    			break;
+    		case 8:
+    			break;
+    		case 9:
+    			break;
+    		case 10:
+    			break;
+    		case 11:
+    			break;
+    		case 12:
+    			break;
+    		case 13:
+    			break;
+    		case 14:
+    			break;
+    		case 15:
+    			swerve.wheelsToZero();
+    			break;
+    		default:
+    			swerve.relativeRotateRobot(60);
+    	}*/
     	
-    	swerve.wheelsToZero();
+    	//swerve.relativeRotateRobot(90);
+    	swerve.absoluteRotateRobot(35);
+    	/*
+    	try{
+    		Thread.sleep(4000);
+    		} catch(Exception e){
+    		
+    	}
+    	swerve.relativeRotateRobot(-10);*/
     	
     }
 

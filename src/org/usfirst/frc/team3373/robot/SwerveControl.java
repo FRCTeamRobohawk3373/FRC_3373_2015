@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +27,8 @@ public class SwerveControl  {
 	//Back Right Wheel
 	Talon driveRBMotor;
 	CANTalon rotateRBMotor;
+	
+	Talon dummyMotor = new Talon(5);
 	
 	
 	//NavX
@@ -63,9 +64,9 @@ public class SwerveControl  {
 	double robotWidth;
 	
 	//Used for Autonomous control
-	SwervePIDOutput rotatePIDOutput = new SwervePIDOutput();
-	
-	PIDController relativeRotationPID = new PIDController(10, 0, 5, imu, rotatePIDOutput);
+	PIDOutputObject rotatePIDOutput = new PIDOutputObject();
+	PIDInputObject rotatePIDInput = new PIDInputObject();
+	PIDController rotationPID = new PIDController(5, 0, 10, rotatePIDInput, rotatePIDOutput);// d=10
 	
 	/*give dimensions between the wheels both width and length, 
 	 * width is the distance between left wheels and right wheels,
@@ -96,10 +97,10 @@ public class SwerveControl  {
 		angleToDiagonal = Math.toDegrees(Math.atan2(length, width));
 		
 		
-		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 687,1);
-		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 687,0);
-		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 687,2);
-		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 687,3);
+		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (270 - angleToDiagonal), 205);
+		FRWheel = new SwerveWheel(frontRightDriveChannel, frontRightRotateID, p, i, d, (angleToDiagonal + 90), 205);
+		BLWheel = new SwerveWheel(backLeftDriveChannel, backLeftRotateID, p, i, d, (angleToDiagonal + 270), 0);
+		BRWheel = new SwerveWheel(backRightDriveChannel, backRightRotateID, p, i, d, (90 - angleToDiagonal), 0);
 		
 		/*
 		FLWheel = new SwerveWheel(frontLeftDriveChannel, frontLeftRotateID, p, i, d, (180 - angleToDiagonal), 0);
@@ -122,7 +123,7 @@ public class SwerveControl  {
     		// You can also use the IMUAdvanced class for advanced
     		// features.
     		
-    		byte update_rate_hz = 50;
+    		byte update_rate_hz = 100;
     		//imu = new IMU(serial_port,update_rate_hz);
     		imu = new IMUAdvanced(serial_port,update_rate_hz);
         	} catch( Exception ex ) {
@@ -130,7 +131,7 @@ public class SwerveControl  {
         	}
 		
 		
-		
+        initPIDControllers();
 	}
 
 	
@@ -143,22 +144,42 @@ public class SwerveControl  {
 	 * @param targetAngle Angle(degrees) from current position of robot, which robot will rotate to
 	 */
 	
-	public void relativeRotateRobot(double targetAngle){
+	public void initPIDControllers(){
+		rotationPID.enable();
+		rotationPID.setInputRange(-180, 180); //sets input range from 0 to 360(degrees)
+		rotationPID.setOutputRange(-0.5, 0.5); //sets output range from -1 to 1(max rotation values)
+		rotationPID.setContinuous();
+		updatePIDControllers();
+	}
+	
+	public void updatePIDControllers(){
+		rotatePIDInput.setValue(imu.getYaw());
+		SmartDashboard.putNumber("PIDInput Value: ", rotatePIDInput.pidGet());
+	}
+	
+	
+	public void relativeRotateRobot(double angle){
 		double currentAngle = imu.getYaw();
-		double deltaAngle = targetAngle - currentAngle; //get delta between target and delta
-		relativeRotationPID.setInputRange(0, 360); //sets input range from 0 to 360(degrees)
-		relativeRotationPID.setOutputRange(-1, 1); //sets output range from -1 to 1(max rotation values)
-		relativeRotationPID.setSetpoint(currentAngle + deltaAngle); //tells PID loop to go to the delta + the current
-		while(Math.abs(currentAngle - targetAngle) <= 1){ //waits until we are within range of the angle
+		double targetAngle = currentAngle + angle;
+		if(targetAngle >= 180){
+			targetAngle -= 360;
+		} else if(targetAngle < -180){
+			targetAngle += 360;
+		}
+		updatePIDControllers();
+		while(Math.abs(currentAngle - targetAngle) >= 2){ //waits until we are within range of the angle
+			rotationPID.setSetpoint(targetAngle); //tells PID loop to go to the targetAngle
+			currentAngle = imu.getYaw();
+			updatePIDControllers();
+			//calculateSwerveControl(0,0,0.2);
 			calculateSwerveControl(0, 0, rotatePIDOutput.getPIDValue()); //sets the wheels to rotate based off PID loop
 			try{
-				Thread.sleep(10);
+				Thread.sleep(1);
 			} catch(Exception e){
 				//Do nothing
 			}
 		}
 		calculateSwerveControl(0,0,0); //stops robot spinning
-		
 	}
 	
 	/**
@@ -168,10 +189,17 @@ public class SwerveControl  {
 	
 	public void absoluteRotateRobot(double targetAngle){
 		double currentAngle = imu.getYaw();
-		relativeRotationPID.setInputRange(0, 360); //sets input range from 0 to 360(degrees)
-		relativeRotationPID.setOutputRange(-1, 1); //sets output range from -1 to 1(max rotation values)
-		relativeRotationPID.setSetpoint(targetAngle);//tells PID loop to go to the target angle
-		while(Math.abs(currentAngle - targetAngle) <= 1){//waits until we are within range of our target angle
+		if(targetAngle >= 180){
+			targetAngle-=360;
+		} else if(targetAngle < -180){
+			targetAngle +=360;
+		}
+		updatePIDControllers();
+		while(Math.abs(currentAngle - targetAngle) >= 1){//waits until we are within range of our target angle
+			rotationPID.setSetpoint(targetAngle);//tells PID loop to go to the target angle
+			currentAngle = imu.getYaw();
+			SmartDashboard.putNumber("Absolute Current Angle", currentAngle);
+			updatePIDControllers();
 			calculateSwerveControl(0, 0, rotatePIDOutput.getPIDValue());//sets the wheels to rotate based off PID loop
 			try{
 				Thread.sleep(10);
@@ -499,11 +527,7 @@ public class SwerveControl  {
     
     public void wheelsToZero(){
     	FRWheel.goToZero();
-    	/*for (SwerveWheel wheel : wheelArray){
-    		wheel.goToZero();
-    		//wheel.rotateMotor.setP(10);
-    	}*/
-    	
+    	FLWheel.goToZero();
     }
     /*
     public void test(){
