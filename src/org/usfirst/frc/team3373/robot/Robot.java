@@ -43,6 +43,7 @@ public class Robot extends SampleRobot {
     PIDController pid;
     SwerveControl swerve;
     Deadband deadband;
+    
     DigitalInput ones;
     DigitalInput twos;
     DigitalInput fours;
@@ -104,11 +105,12 @@ public class Robot extends SampleRobot {
     public Robot() {
         stick1 = new SuperJoystick(0);
         stick2 = new SuperJoystick(1);
-        indexer = new Indexer(9, 10, 8, 1);
-        //servo = new Servo(2);
-        swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
-        		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
-        		backRightRotate, robotWidth, robotLength);
+        indexer = new Indexer(9, 10, 1, 0, 0, 1);
+        //swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
+        //		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
+        //		backRightRotate, robotWidth, robotLength);
+        
+        
         deadband = new Deadband();
         
         //LimitSwitches for Auto selector
@@ -213,8 +215,20 @@ public class Robot extends SampleRobot {
     			swerve.relativeRotateRobot(60);
     	}*/
     	
-    	//swerve.relativeRotateRobot(90);
-    	swerve.absoluteRotateRobot(35);
+    	swerve.relativeRotateRobot(90);
+    	
+    	
+    	/*swerve.relativeMoveRobot(270, 0.3, 2);
+    	swerve.relativeMoveRobot(0, 0.3, 2);
+    	swerve.relativeMoveRobot(90, 0.3, 2);
+    	swerve.relativeMoveRobot(180, 0.3, 2);
+    	
+    	double angle = 0;
+    			
+    	while(angle < 360){
+        	swerve.relativeMoveRobot(angle, 0.3, 0.2);
+        	angle += 10;
+    	}*/
     	/*
     	try{
     		Thread.sleep(4000);
@@ -269,6 +283,16 @@ public class Robot extends SampleRobot {
                 imu.zeroYaw();
                 first_iteration = false;
             }
+            
+            //swerve.test();
+
+            indexer.controlMotors(stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            
+            SmartDashboard.putBoolean("Ones: ", ones.get());
+            SmartDashboard.putBoolean("Twos: ", twos.get());
+            SmartDashboard.putBoolean("Fours: ", fours.get());
+            SmartDashboard.putBoolean("Eights: ", eights.get());
+            
     		/*
             SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
             SmartDashboard.putBoolean(  "IMU_IsCalibrating",    imu.isCalibrating());
@@ -298,6 +322,9 @@ public class Robot extends SampleRobot {
             swerve.FRWheel.calibration(stick1.isAPushed());*/
             
             //CENTRICITY Control aka switching robot modes
+            
+            /* SWERVE CODE
+            
             if(stick1.isLStickPushed()){
             	swerve.switchToFieldCentric();
             }
@@ -311,16 +338,7 @@ public class Robot extends SampleRobot {
             
             swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
             swerve.move(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
-            
-
-            
-            SmartDashboard.putNumber("LY: ", -stick1.getRawAxis(LY));
-            SmartDashboard.putNumber("LX: ", stick1.getRawAxis(LX));
-            SmartDashboard.putNumber("R: ", stick1.getRawAxis(RX));
-            
-            
-            
-            
+            */
             
             /*SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Left Current Encoder Reading", swerve.FLWheel.rotateMotor.getEncPosition());
