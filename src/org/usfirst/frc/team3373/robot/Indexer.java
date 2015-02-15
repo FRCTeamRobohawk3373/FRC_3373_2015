@@ -10,17 +10,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Indexer {
 	
 	private RobotDrive indexer;
-	private CANTalon leftArmMotor;
-	private CANTalon rightArmMotor;
-	private AnalogInput leftPot;
-	private AnalogInput rightPot;
+	private CANTalon armMotor;
+	private AnalogInput pot;
 	private double max;
 	private double min;
 	private double maxOutput = 0.4;
-	private double leftOutput = maxOutput;
-	private double rightOutput = maxOutput;
-	private double rightCurrent;
-	private double leftCurrent;
+	private double output = maxOutput;
+	private double current;
 	private double maxCurrent = 0.9;
 	private double minCurrent = 0.7;
 	
@@ -32,29 +28,53 @@ public class Indexer {
 	 * @param potAnalogChannel
 	 */
 
-	public Indexer(int leftWheelChannel , int rightWheelChannel, int leftArmMotorID, int leftPotAnalogChannel, int rightArmMotorID, int rightPotAnalogChannel){
+	public Indexer(int leftWheelChannel , int rightWheelChannel, int armMotorID, int potAnalogChannel){
 		indexer = new RobotDrive(leftWheelChannel, rightWheelChannel);
 		
-		leftArmMotor = new CANTalon(leftArmMotorID);
-		leftPot = new AnalogInput(leftPotAnalogChannel);
-		rightArmMotor = new CANTalon(rightArmMotorID);
-		rightPot = new AnalogInput(rightPotAnalogChannel);
+		armMotor = new CANTalon(armMotorID);
+		pot = new AnalogInput(potAnalogChannel);
 		
-		
-		leftArmMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
-		leftArmMotor.enableBrakeMode(true);
-		leftArmMotor.enableLimitSwitch(false, false);
-		rightArmMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
-		rightArmMotor.enableBrakeMode(true);
-		rightArmMotor.enableLimitSwitch(false, false);
+		armMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
+		armMotor.enableBrakeMode(true);
+		armMotor.enableLimitSwitch(false, false);
 	}
 	
 	public void wheelControl(double leftY, double rightY){
 		indexer.tankDrive(leftY, rightY);
 	}
 	
-
+	public void controlArms(double LX){
+		if(current > maxCurrent){
+			output -= 0.05;
+		} else if(current < minCurrent){
+			output += 0.05;
+		}
+		
+		if(output > maxOutput){
+			output = maxOutput;
+		} else if(output < 0){
+			output = 0;
+		}
+		
+		if(LX > 0.1){
+			armMotor.set(-output);
+		} else if(LX < 0.1) {
+			armMotor.set(output);
+		} else{
+			armMotor.set(0);
+		}
+	}
 	
+	public boolean isHolding(){
+		if(output < (maxOutput)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+
+	/*
 	public void controlMotors(double LX, double RX){
 		
 		leftCurrent = leftArmMotor.getOutputCurrent();
@@ -109,7 +129,7 @@ public class Indexer {
 			rightArmMotor.set(0);
 		}
 		
-		/*
+		
 		if(LX > 0.1){
 			leftArmMotor.set(leftOutput);
 		} else if(LX < 0.1){
@@ -124,7 +144,7 @@ public class Indexer {
 			rightArmMotor.set(-rightOutput);
 		} else {
 			rightArmMotor.set(0);
-		}*/
-	}
+		}
+	}*/
 
 }
