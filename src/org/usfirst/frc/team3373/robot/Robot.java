@@ -43,6 +43,7 @@ public class Robot extends SampleRobot {
     PIDController pid;
     SwerveControl swerve;
     Deadband deadband;
+    CanGrabber canGrabber;
     
     DigitalInput ones;
     DigitalInput twos;
@@ -112,6 +113,9 @@ public class Robot extends SampleRobot {
         
         
         deadband = new Deadband();
+        
+        //Can Grabber
+        canGrabber = new CanGrabber(3, 4);
         
         //LimitSwitches for Auto selector
         ones = new DigitalInput(6);
@@ -215,7 +219,13 @@ public class Robot extends SampleRobot {
     			swerve.relativeRotateRobot(60);
     	}*/
     	
-    	swerve.relativeRotateRobot(90);
+    	canGrabber.lowerCanGrabber();
+    	try{
+    		Thread.sleep(2000);
+    	} catch(Exception e){
+    		
+    	}
+    	canGrabber.raiseCanGrabber();
     	
     	
     	/*swerve.relativeMoveRobot(270, 0.3, 2);
@@ -288,10 +298,14 @@ public class Robot extends SampleRobot {
 
             indexer.controlMotors(stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             
+            canGrabber.controlCanGrabber(stick1.getPOV());
+            
             SmartDashboard.putBoolean("Ones: ", ones.get());
             SmartDashboard.putBoolean("Twos: ", twos.get());
             SmartDashboard.putBoolean("Fours: ", fours.get());
             SmartDashboard.putBoolean("Eights: ", eights.get());
+            
+            SmartDashboard.putNumber("Pov: ", stick1.getPOV());
             
     		/*
             SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
