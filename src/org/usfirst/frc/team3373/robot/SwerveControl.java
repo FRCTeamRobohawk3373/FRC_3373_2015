@@ -66,7 +66,7 @@ public class SwerveControl  {
 	//Used for Autonomous control
 	PIDOutputObject rotatePIDOutput = new PIDOutputObject();
 	PIDInputObject rotatePIDInput = new PIDInputObject();
-	PIDController rotationPID = new PIDController(5, 0, 10, rotatePIDInput, rotatePIDOutput);// d=10
+	PIDController rotationPID = new PIDController(5, 0, 8, rotatePIDInput, rotatePIDOutput);// p=5 i=0 d=10
 	
 	/*give dimensions between the wheels both width and length, 
 	 * width is the distance between left wheels and right wheels,
@@ -159,13 +159,17 @@ public class SwerveControl  {
 	
 	
 	public void relativeRotateRobot(double angle){
+		SmartDashboard.putNumber("Delta Angle", angle);
 		double currentAngle = imu.getYaw();
+		SmartDashboard.putNumber("Current Angle:", currentAngle);
 		double targetAngle = currentAngle + angle;
+
 		if(targetAngle >= 180){
 			targetAngle -= 360;
 		} else if(targetAngle < -180){
 			targetAngle += 360;
 		}
+		SmartDashboard.putNumber("Target Angle: ", targetAngle);
 		updatePIDControllers();
 		while(Math.abs(currentAngle - targetAngle) >= 2){ //waits until we are within range of the angle
 			rotationPID.setSetpoint(targetAngle); //tells PID loop to go to the targetAngle
@@ -180,6 +184,19 @@ public class SwerveControl  {
 			}
 		}
 		calculateSwerveControl(0,0,0); //stops robot spinning
+		SmartDashboard.putNumber("Current Angle:", currentAngle);
+	}
+	
+	public void relativeMoveRobot(double angle, double speed, double time){
+		calculateSwerveControl(Math.sin(Math.toRadians(angle)) * speed, Math.cos(Math.toRadians(angle)) * speed, 0);
+		try{
+			Thread.sleep((long) (time * 1000));
+		}catch(Exception e){
+			//Do nothing
+		}
+
+		calculateSwerveControl(0, 0, 0);
+		
 	}
 	
 	/**
@@ -529,12 +546,18 @@ public class SwerveControl  {
     	FRWheel.goToZero();
     	FLWheel.goToZero();
     }
-    /*
+    
     public void test(){
     	FRWheel.test();
-    	FLWheel.test();
-    	BLWheel.test();
-    	BRWheel.test();
-    }*/
+    	//FLWheel.test();
+    	//BLWheel.test();
+    	//BRWheel.test();
+    }
+    public void disable(){
+    	FRWheel.disable();
+    	//FLWheel.test();
+    	//BLWheel.test();
+    	//BRWheel.test();
+    }
 }
 
