@@ -16,7 +16,7 @@ public class Auto0 {
 	/**
 	 * Moves the robot forward five seconds at 50% speed
 	 */
-	public void moveAuto1(){
+	public void runAuto0(){
 		swerve.relativeMoveRobot(0, .5, 5);
 	}
 }
