@@ -43,15 +43,15 @@ public class CanGrabber {
 		}
 		stop();
 	}
-	private void lower(){
+	public void lower(){
 		leftMotor.set(-0.3);
 		rightMotor.set(0.3);
 	}
-	private void raise(){
+	public void raise(){
 		leftMotor.set(0.3);
 		rightMotor.set(-0.3);
 	}
-	private void stop(){
+	public void stop(){
 		leftMotor.set(0);
 		rightMotor.set(0);
 	}
