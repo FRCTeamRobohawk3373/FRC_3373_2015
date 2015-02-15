@@ -17,6 +17,8 @@ public class SwerveWheel {
 	private double speedModifier = 0.5;
 	private int encoderAtHome = 0;
 	private int homeToZero = 0;
+	
+	private double output = 0.3;
 
 	
 	//orientation is negative 1, if banebots are facing forwards, orientation is 1 if the banebots are facing backwards
@@ -187,7 +189,30 @@ public class SwerveWheel {
 	
     
     public void test(){
-    	rotateMotor.set(encoderUnitsPerRotation*10);
+    	double current = rotateMotor.getOutputCurrent();
+    	rotateMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
+    	
+    	if(current > 0.95){
+    		output -= 0.05;
+    	} else if(current < 0.7){
+    		output += 0.05;
+    	}
+    	
+    	if(output > 0.3){
+    		output = 0.3;
+    	}
+    	
+    	if(output < 0){
+    		output = 0;
+    	}
+    	
+    	rotateMotor.set(output);
+    	SmartDashboard.putNumber("Output to Motor", output);
+    	SmartDashboard.putNumber("Current", rotateMotor.getOutputCurrent());
+    }
+    
+    public void disable(){
+    	rotateMotor.set(0);
     }
 
 	
