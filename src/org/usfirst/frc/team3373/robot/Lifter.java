@@ -216,8 +216,18 @@ public class Lifter {
 		}
 	}*/
 	
+	/**
+	 * Sets the target acuator length
+	 * @param target target actuator length
+	 */
 	public void changeTarget(double target){
-		lifterTarget = target;
+		if (target > maxLengthL){
+			lifterTarget = maxLengthL;
+		}  else if (target < minLengthL){
+			lifterTarget = minLengthL;
+		} else {
+			lifterTarget = target;
+		}
 	}
 	
 	
@@ -245,6 +255,28 @@ public class Lifter {
 			rightActuator.set(rightActPIDOutput.getPIDValue());// - errorPIDOutput.getPIDValue());
 			SmartDashboard.putNumber("Right Actuator Speed: ", rightActuator.get());//.getPIDValue() + errorPIDOutput.getPIDValue());
 		//}
+			//Does not allow the robot to break itself by throwing arm out of wack
+			if ((leftActuator.isFwdLimitSwitchClosed() || rightActuator.isFwdLimitSwitchClosed()) && ((lifterTarget > getLeftActuatorLength()) || (lifterTarget > getRightActuatorLength()))){
+				leftActuator.set(0);
+				rightActuator.set(0);
+			} else if ((leftActuator.isRevLimitSwitchClosed() || rightActuator.isRevLimitSwitchClosed()) && ((lifterTarget < getLeftActuatorLength()) || (lifterTarget < getRightActuatorLength()))){
+				leftActuator.set(0);
+				rightActuator.set(0);
+			} else {
 
+			}
+
+	}
+	/**
+	 * Raises the lifterArm for manual control
+	 */
+	public void raise(){
+		changeTarget(lifterTarget += .01);
+	}
+	/**
+	 * Lowers the lifter arm for manual control
+	 */
+	public void lower(){
+		changeTarget(lifterTarget -= .01);
 	}
 }
