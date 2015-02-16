@@ -30,7 +30,6 @@ public class SwerveControl  {
 	
 	Talon dummyMotor = new Talon(5);
 	
-	
 	//NavX
 	IMUAdvanced imu;
 	SerialPort serial_port;
@@ -50,7 +49,8 @@ public class SwerveControl  {
     boolean isFieldCentric = false;
     boolean isObjectCentric = false;
     
-    double radius = 40;
+    double objectCentricRadius = 40;
+    double hookCentricRadius = 35;
     
 	SwerveWheel[] wheelArray;
 
@@ -253,8 +253,10 @@ public class SwerveControl  {
     public void move(double LY, double LX, double RX){
     	if(isFieldCentric || isRobotCentric){
     		calculateSwerveControl(LY, LX, RX);
-    	} else {
-    		calculateObjectControl(RX);
+    	} else if(isObjectCentric){
+    		calculateObjectControl(RX, objectCentricRadius);
+    	} else{
+    		calculateObjectControl(RX, hookCentricRadius);
     	}
     }
     
@@ -396,7 +398,7 @@ public class SwerveControl  {
      * @param RX Right stick X Axis
      */
     
-    public void calculateObjectControl(double RX){
+    public void calculateObjectControl(double RX, double radius){
     	double distanceToFront = radius - robotLength/2;
     	double distanceToBack = radius + robotLength/2;
     	
@@ -424,6 +426,104 @@ public class SwerveControl  {
     	BLWheel.drive();
     	
     }
+    public void swerveControl(double LY, double LX, double RX, double radius){
+    	double translationalXComponent = LX;
+    	double translationalYComponent = LY;
+    	double translationalMagnitude;
+    	double translationalAngle;
+    	
+    	double rAxis = RX;
+    	double rotateXComponent;
+    	double rotateYComponent;
+    	double fastestSpeed = 0;
+    	
+    	//Deadband
+    	if(Math.abs(LX) < 0.1){
+    		translationalXComponent = 0;
+    		LX = 0;
+    	}
+    	
+    	if(Math.abs(LY) < 0.1){
+    		translationalYComponent = 0;
+    		LY = 0;
+    	}
+    	
+    	if(Math.abs(RX) < 0.1){
+    		rAxis = 0;
+    		RX = 0;
+    	}
+    	
+    	
+    	if(isFieldCentric){
+    		orientationOffset = imu.getYaw(); //if in field centric mode make offset equal to the current angle of the navX
+    	}
+    	
+    	double rotationMagnitude = Math.abs(rAxis);
+    	
+    	//We break up the axis to create two vectors for the robot(and each wheel)
+    		//translational vector
+    		//rotation vector
+    	
+    	//Same for all wheels so therefore we only do the transitional vector math once
+    	translationalMagnitude = Math.sqrt(Math.pow(translationalYComponent, 2) + Math.pow(translationalXComponent, 2));
+    	translationalAngle = Math.toDegrees(Math.atan2(translationalYComponent, translationalXComponent));
+    	
+    	translationalAngle += orientationOffset; //sets the robot front to be at the angle determined by orientationOffset
+    	if(translationalAngle >= 360){
+    		translationalAngle -= 360;
+    	} else if(translationalAngle < 0){
+    		translationalAngle += 360;
+    	}
+    	
+    	translationalYComponent = Math.sin(Math.toRadians(translationalAngle)) * translationalMagnitude; //calculates y component of translation vector
+    	translationalXComponent = Math.cos(Math.toRadians(translationalAngle)) * translationalMagnitude; //calculates x component of translation vector
+    	
+    	
+    	//math for rotation vector, different for every wheel so we calculate for each one seperately
+    	for (SwerveWheel wheel : wheelArray){
+    		
+    		rotateXComponent = Math.cos(Math.toRadians(wheel.getRAngle())) * rotationMagnitude; //calculates x component of rotation vector
+    		rotateYComponent = Math.sin(Math.toRadians(wheel.getRAngle())) * rotationMagnitude; //calculates y component of rotation vector
+    		
+    		if(rAxis > 0){//Why do we do this?
+    			rotateXComponent = -rotateXComponent;
+    			rotateYComponent = -rotateYComponent;
+    		}
+    		
+    		wheel.setSpeed(Math.sqrt(Math.pow(rotateXComponent + translationalXComponent, 2) + Math.pow((rotateYComponent + translationalYComponent), 2)));//sets the speed based off translational and rotational vectors
+    		wheel.setTargetAngle(Math.toDegrees(Math.atan2((rotateYComponent + translationalYComponent), (rotateXComponent + translationalXComponent))));//sets the target angle based off translation and rotational vectors
+    		
+    		if(LY == 0 && LX == 0 && RX == 0){//if our inputs are nothing, don't change the angle(use currentAngle as targetAngle)
+    			wheel.setTargetAngle(wheel.getCurrentAngle());
+    		}
+    		
+    		if(wheel.getSpeed() > fastestSpeed){//if speed of wheel is greater than the others store the value
+    			fastestSpeed = wheel.getSpeed();
+    		}
+    	}
+    	
+    	if(fastestSpeed > 1){ //if the fastest speed is greater than 1(our max input) divide the target speed for each wheel by the fastest speed
+    		for(SwerveWheel wheel : wheelArray){
+        		wheel.setSpeed(wheel.getSpeed()/fastestSpeed);
+        	}
+    	}
+    	
+    	//Makes the wheels go to calculated target angle
+    	FRWheel.goToAngle();
+    	FLWheel.goToAngle();
+    	BRWheel.goToAngle();
+    	BLWheel.goToAngle();
+    	//Make the wheels drive at their calculated speed
+    	FRWheel.drive();
+    	FLWheel.drive();
+    	BRWheel.drive();
+    	BLWheel.drive();
+    	
+    	
+    	
+    
+    }
+    
     /**
      * Called by calculateObjectControl Method (Do Not Use)
      */
@@ -492,6 +592,11 @@ public class SwerveControl  {
 		isObjectCentric = false;
 		isFieldCentric = false;
 		isRobotCentric = true;
+		orientationOffset = 0;
+    }
+    
+    public void switchToHookCentric(){
+    	
     }
     
     /*
@@ -539,7 +644,7 @@ public class SwerveControl  {
     }
     
     /**
-     * Moves all four swerve wheels to zero position(straight sideways)(0 degrees on the unit circle)
+     * Moves all four swerve wheels to zero position(straight sideways)(0 degrees on the unit circle) DO NOT USE
      */
     
     public void wheelsToZero(){

@@ -48,7 +48,7 @@ public class Auto2 {
 	}
 	
 	private void pickUpTote(){
-		indexer.controlMotors(1, -1);
+		indexer.controlArms(1);
 		indexer.wheelControl(.5, .5);
 	}
 	
