@@ -35,23 +35,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * this system. Use IterativeRobot or Command-Based instead if you're new.
  */
 public class Robot extends SampleRobot {
-    SuperJoystick stick1;
-    SuperJoystick stick2;
-    Indexer indexer;
-    Servo servo;
-    Talon rotateTalon;
-    PIDController pid;
-    SwerveControl swerve;
-    Deadband deadband;
-    CanGrabber canGrabber;
+    //Controllers
+	SuperJoystick driver;
+    SuperJoystick shooter;
     
+    Indexer indexer;
+    SwerveControl swerve;
+    Lifter lifter;
+    
+    //Controllers
     DigitalInput ones;
     DigitalInput twos;
     DigitalInput fours;
     DigitalInput eights;
     
-
-    //CANTalon actuator;
     
     SerialPort serial_port;
     //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -67,18 +64,7 @@ public class Robot extends SampleRobot {
     
     boolean first_iteration;
     
-    double proportionalConstant = 0.5;
-    double derivativeConstant = 0.5;
-    double integralConstant = 0.5;
-    
-    double p = 35; //100 is very close
-    double i = 0;
-    double d = 0;
-    double f = 0;
-    int izone = 100;
-    double ramprate = 36;
-    int profile = 0;
-    int drivePos = 1;
+
     /***************************
      * Robot Talon Identifier  *
      *		F                  *
@@ -104,18 +90,16 @@ public class Robot extends SampleRobot {
     
     
     public Robot() {
-        stick1 = new SuperJoystick(0);
-        stick2 = new SuperJoystick(1);
-        indexer = new Indexer(9, 10, 1, 0, 0, 1);
-        //swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
-        //		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
-        //		backRightRotate, robotWidth, robotLength);
+    	//Initialize controllers
+        driver = new SuperJoystick(0);
+        shooter = new SuperJoystick(1);
+        //Initialize robot sub-systems
+        lifter = new Lifter(4, 5);
+        indexer = new Indexer(8, 9, 6);
+        swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
+        		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
+        	    backRightRotate, robotWidth, robotLength);
         
-        
-        deadband = new Deadband();
-        
-        //Can Grabber
-        canGrabber = new CanGrabber(3, 4);
         
         //LimitSwitches for Auto selector
         ones = new DigitalInput(6);
@@ -123,23 +107,9 @@ public class Robot extends SampleRobot {
         fours = new DigitalInput(8);
         eights = new DigitalInput(9);
         
-        //actuator = new CANTalon(0);
-        
-
-        //driveTalon = new CANTalon (0);
-
         
         
         haveRun = false;
-        
-        //actuator.setPID(p,i,d);
-        //pid = new PIDController(proportionalConstant, derivativeConstant, integralConstant, pot, rotateTalon );
-        
-        
-        
-        //twoTalon.changeControlMode(CANTalon.ControlMode.Position);
-        //twoTalon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        //drivePos = driveTalon.getEncPosition();
 
         
         try {
@@ -219,14 +189,6 @@ public class Robot extends SampleRobot {
     			swerve.relativeRotateRobot(60);
     	}*/
     	
-    	canGrabber.lowerCanGrabber();
-    	try{
-    		Thread.sleep(2000);
-    	} catch(Exception e){
-    		
-    	}
-    	canGrabber.raiseCanGrabber();
-    	
     	
     	/*swerve.relativeMoveRobot(270, 0.3, 2);
     	swerve.relativeMoveRobot(0, 0.3, 2);
@@ -256,10 +218,79 @@ public class Robot extends SampleRobot {
         
     	while (isOperatorControl() && isEnabled()) {
             
+    		/****************************
+    		 * Driver Specific Controls *
+    		 ****************************/
+    		
+    		//Driving
+    		swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+    		if(driver.isLBHeld()){
+    			//turbo mode
+    		} else if(driver.isRBHeld()){
+    			//sniper mode
+    		} else{
+    			//default speed
+    		}
+    		
+    		//Switching Driving modes
+    		if(driver.isRStickHeld()){
+    			//Robot Centric mode
+    		} else if(driver.isLStickPushed()){
+    			//Field Centric mode
+    		} else if(driver.getRawAxis(Rtrigger) > 0.2){
+    			//Object Centric
+    		} else if(driver.getRawAxis(Ltrigger) > 0.2){
+    			//Hook/Load Centric
+    		}
+    		
+    		/*****************************
+    		 * Shooter Specific Controls *
+    		 *****************************/
+    		
+    		//Index and arm control
+    		indexer.wheelControl(shooter.getRawAxis(LY), shooter.getRawAxis(RY));
+    		indexer.controlArms(shooter.getRawAxis(LX));//TODO: need to add control to RX also
+    		
+    		
+    		//lifter control
+    		if(shooter.isLBPushed()){
+    			//up target by one tote
+    		} else if(shooter.isRBPushed()){
+    			//down target by one tote
+    		}
+    		//Manual lifter control
+    		if(shooter.getRawAxis(Ltrigger) > 0.3){
+    			//raise lifter
+    		} else if(shooter.getRawAxis(Rtrigger) > 0.3){
+    			//lower lifter
+    		}
+    		
+    		/*******************
+    		 * Shared Controls *
+    		 *******************/
+    		
+    		if(driver.isAPushed() || shooter.isAPushed()){
+    			//Lower lifter to the ground
+    		} else if(driver.isBPushed() || shooter.isBPushed()){
+    			//move lifter to transport height ~4 in off ground
+    		} else if(driver.isXPushed() || shooter.isXPushed()){
+    			//move lifter to can-pickup height
+    		} else if(driver.isYPushed() || shooter.isYPushed()){
+    			//unhook stack
+    		}
+    		//flip tote and right can
+    		
+    		if(driver.isStartPushed() || shooter.isStartPushed() || shooter.isRStickPushed()){
+    			//right can
+    		} else if(driver.isBackPushed() || shooter.isBackPushed() || shooter.isLStickPushed()){
+    			//flip tote
+    		}
+    		
+    		
     		
     		Timer.delay(0.005);
-    		stick1.clearButtons();
-    		stick2.clearButtons();
+    		driver.clearButtons();
+    		shooter.clearButtons();
         }
     }
 
@@ -276,14 +307,8 @@ public class Robot extends SampleRobot {
     		} else if (stick1.isBHeld()){
     			swerve.FLWheel.targetAngle -= 5;
     		}
-    		swerve.FRWheel.targetAngle = 358;
-    		double FRCurrentAngle = swerve.FRWheel.currentAngle = swerve.encoderUnitToAngle(-swerve.FRWheel.rotateMotor.getEncPosition());
     		
-			double deltaFR = swerve.FRWheel.getDeltaTheta();
-			double deltaFL = swerve.FLWheel.getDeltaTheta();
-			double deltaBR = swerve.BRWheel.getDeltaTheta();
-			double deltaBL = swerve.BLWheel.getDeltaTheta();
-    			
+				
     		double encoderFR = swerve.FRWheel.rotateMotor.getEncPosition();
     		*/
     		
@@ -296,16 +321,14 @@ public class Robot extends SampleRobot {
             
             //swerve.test();
 
-            indexer.controlMotors(stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            //indexer.controlMotors(stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             
-            canGrabber.controlCanGrabber(stick1.getPOV());
+     
             
             SmartDashboard.putBoolean("Ones: ", ones.get());
             SmartDashboard.putBoolean("Twos: ", twos.get());
             SmartDashboard.putBoolean("Fours: ", fours.get());
             SmartDashboard.putBoolean("Eights: ", eights.get());
-            
-            SmartDashboard.putNumber("Pov: ", stick1.getPOV());
             
     		/*
             SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
@@ -386,8 +409,8 @@ public class Robot extends SampleRobot {
             	twoTalon.set(15000);
             }*/
             
-            stick1.clearButtons();
-            stick2.clearButtons();
+            driver.clearButtons();
+            shooter.clearButtons();
     	}
     }
     

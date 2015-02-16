@@ -11,7 +11,6 @@ public class Indexer {
 	
 	private RobotDrive indexer;
 	private CANTalon armMotor;
-	private AnalogInput pot;
 	private double max;
 	private double min;
 	private double maxOutput = 0.4;
@@ -28,11 +27,10 @@ public class Indexer {
 	 * @param potAnalogChannel
 	 */
 
-	public Indexer(int leftWheelChannel , int rightWheelChannel, int armMotorID, int potAnalogChannel){
+	public Indexer(int leftWheelChannel , int rightWheelChannel, int armMotorID){
 		indexer = new RobotDrive(leftWheelChannel, rightWheelChannel);
 		
 		armMotor = new CANTalon(armMotorID);
-		pot = new AnalogInput(potAnalogChannel);
 		
 		armMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		armMotor.enableBrakeMode(true);
