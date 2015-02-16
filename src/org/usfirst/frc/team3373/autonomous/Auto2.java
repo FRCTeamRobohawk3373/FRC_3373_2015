@@ -37,12 +37,8 @@ public class Auto2 {
 			lifter.goToLength();
 		}
 		swerve.relativeMoveRobot(90, .5, 1);
-		pickUpTote();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		while (indexer.isHolding()){
+			pickUpTote();
 		}
 		swerve.relativeMoveRobot(180, .5, 5);
 	}
