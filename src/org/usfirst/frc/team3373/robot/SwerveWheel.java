@@ -11,6 +11,7 @@ public class SwerveWheel {
 	private CANTalon rotateMotor;
 	
 	private double rAngle;
+	private double rSpeed;
 	private double speed;
 	private int targetAngle;
 	private int encoderUnitsPerRotation = 1660;//was 1665
@@ -81,10 +82,23 @@ public class SwerveWheel {
 		return encoderUnitToAngle(getEncoderValue());
 		//return encoderUnitToAngle(rotateMotor.getEncPosition());
 	}
-	
+
 	public int getRAngle(){
 		return (int)rAngle;
 	}
+	
+	public double getRSpeed(){
+		return rSpeed;
+	}
+	public void setRAngle(double ra){
+		rAngle = ra;
+	}
+	
+	public void setRSpeed(double rs){
+		rSpeed = rs;
+	}
+	
+	
 	
 	public void goToAngle(){
 		rotateMotor.set(getEncoderValue() + angleToEncoderUnit(getDeltaTheta()));
@@ -186,7 +200,9 @@ public class SwerveWheel {
 		rotateMotor.changeControlMode(CANTalon.ControlMode.Position);*/
 	}
 	
-	
+	public void setSpeedModifier(double speed){
+		speedModifier = speed;
+	}
     
     public void test(){
     	double current = rotateMotor.getOutputCurrent();
