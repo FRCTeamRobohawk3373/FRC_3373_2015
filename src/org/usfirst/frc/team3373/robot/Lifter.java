@@ -312,8 +312,6 @@ public class Lifter {
 	}
 	
 	public void printPotValues(){
-		SmartDashboard.putNumber("LeftPotPos", leftActuator.getAnalogInPosition());
-		SmartDashboard.putNumber("RightPotPos", rightActuator.getAnalogInPosition());
 		
 		SmartDashboard.putNumber("LeftPotRaw", leftActuator.getAnalogInRaw());
 		SmartDashboard.putNumber("RightPotRaw", rightActuator.getAnalogInRaw());
@@ -322,6 +320,11 @@ public class Lifter {
 		SmartDashboard.putBoolean("LeftREV", leftActuator.isRevLimitSwitchClosed());
 		SmartDashboard.putBoolean("RightFWD", rightActuator.isFwdLimitSwitchClosed());
 		SmartDashboard.putBoolean("RightREV", rightActuator.isRevLimitSwitchClosed());
+		
+		SmartDashboard.putNumber("Target", lifterTarget);
+		
+		SmartDashboard.putNumber("LeftHeight", getLeftActuatorLength());
+		SmartDashboard.putNumber("RightHeight", getRightActuatorLength());
 	}
 	/**
 	 * Always add to rightActuatorSpeed
@@ -387,25 +390,34 @@ public class Lifter {
 						System.out.println("Thread1");
 						hasAlreadyMoved = true;
 					}*/
-					double speed = 0.3;
-					double leftSpeed = 0.0;
-					double rightSpeed = 0.0;
-					while ((getLeftActuatorLength() - lifterTarget) < .1 || (getRightActuatorLength() - lifterTarget) < .1){
-						if (getLeftActuatorLength() < lifterTarget){
-							leftSpeed = speed;
+						double speed = 0.3;
+						double leftSpeed = 0.0;
+						double rightSpeed = 0.0;
+						while ((getLeftActuatorLength() - lifterTarget) < .1 || (getRightActuatorLength() - lifterTarget) < .1){
+							if (getLeftActuatorLength() < lifterTarget){
+								leftSpeed = speed;
+							} else {
+								leftSpeed = 0;
+							}
+							if (getRightActuatorLength() < lifterTarget){
+								rightSpeed = speed;
+							} else {
+								rightSpeed = 0;
+							}
+							double offset = getLeftActuatorLength() - getRightActuatorLength();
+							
+							SmartDashboard.putNumber("Offset", offset);
+							 if (offset < 0){
+								 offset = 0;
+							 }
+							double slope = 1;
+							rightSpeed += offset * slope;
+							
+							leftActuator.set(leftSpeed);
+							rightActuator.set(rightSpeed);
 						}
-						if (getRightActuatorLength() < lifterTarget){
-							rightSpeed = speed;
-						}
-						double offset = getLeftActuatorLength() - getRightActuatorLength();
-						double slope = 1;
-						rightSpeed += offset * slope;
-						
-						leftActuator.set(leftSpeed);
-						rightActuator.set(rightSpeed);
-					}
 				}
-				if (!hasAlreadyMoved && ((getLeftActuatorLength() > lifterTarget || getRightActuatorLength() > lifterTarget))){
+				/*if (!hasAlreadyMoved && ((getLeftActuatorLength() > lifterTarget || getRightActuatorLength() > lifterTarget))){
 					while ((getLeftActuatorLength() != lifterTarget || getRightActuatorLength() != lifterTarget)){
 						if (getLeftActuatorLength() > lifterTarget){
 							if (speedModifier() < 0){
@@ -431,7 +443,8 @@ public class Lifter {
 						
 						System.out.println(hasAlreadyMoved);
 					}
-				}
+				}*/
+				
 				
 				leftActuator.set(0);
 				rightActuator.set(0);
