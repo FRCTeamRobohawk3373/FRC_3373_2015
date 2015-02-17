@@ -10,11 +10,11 @@ public class Lifter {
 	
 	double pr = 10;
 	double ir = 10;
-	double dr = 10;
+	double dr = 2;
 	
 	double pl = 10;
 	double il = 0;
-	double dl = 10;
+	double dl = 2;
 	
 	//height in inches
 	double robotHeight = 60;
@@ -37,19 +37,26 @@ public class Lifter {
 	double potScalarL = 763;
 	double casingLength = 12;
 	//Right Actuator
-	double maxPotValueR = 870;
-	double minPotValueR = 142;
-	double maxLengthR = 11.1875;//in inches
-	double minLengthR = 1.75;//in inches
+	double maxPotValueR = 934;
+	double minPotValueR = 157;
+	double maxLengthR = 12;//in inches
+	double minLengthR = 1 + (15/16);//in inches
 	//left Actuator
-	double maxPotValueL = 839;
-	double minPotValueL = 136;
-	double maxLengthL = 11;//in inches
-	double minLengthL = 1.8125;//in inches
+	double maxPotValueL = 1023;
+	double minPotValueL = 278;
+	double maxLengthL = 11 + (7/8);//in inches
+	double minLengthL = 1 + (7/16);//in inches
 	
 	double diffBetweenPots = 0;
 	
 	double lifterTarget;
+	
+	boolean isRunning = false;
+	
+	boolean hasAlreadyMoved = false;
+	
+	double speedConstant = .1;
+
 	
 	//Have to use these as a work around to the PID controller class
 	PIDOutputObject leftActPIDOutput = new PIDOutputObject();
@@ -60,8 +67,8 @@ public class Lifter {
 	PIDInputObject rightActPIDInput = new PIDInputObject();
 	PIDInputObject errorPIDInput = new PIDInputObject();
 	
-	PIDController leftActPID = new PIDController(.5, 0, 0, leftActPIDInput, leftActPIDOutput);
-	PIDController rightActPID = new PIDController(.5, 0, 0, rightActPIDInput, rightActPIDOutput);
+	PIDController leftActPID = new PIDController(10, 0, 5, leftActPIDInput, leftActPIDOutput);
+	PIDController rightActPID = new PIDController(10, 0, 5, rightActPIDInput, rightActPIDOutput);
 	PIDController errorPID = new PIDController(3, 0, 0, errorPIDInput, errorPIDOutput);
 	
 	/**
@@ -84,9 +91,11 @@ public class Lifter {
 		leftActuator.changeControlMode(CANTalon.ControlMode.Follower);
 		
 		//Sets main type of sensor available on the CANBus
+		 * */
+		 
 		rightActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
 		leftActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
-		*/
+		
 		
 		leftActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		rightActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
@@ -163,8 +172,8 @@ public class Lifter {
 		leftActPID.setInputRange(minLengthL, maxLengthL);
 		rightActPID.setInputRange(minLengthR, maxLengthR);
 		//set output range
-		leftActPID.setOutputRange(-0.5, 0.5);
-		rightActPID.setOutputRange(-0.5, 0.5);
+		leftActPID.setOutputRange(-0.2, 0.2);
+		rightActPID.setOutputRange(-0.2, 0.2);
 		errorPID.setInputRange(0, 1);
 		errorPID.setOutputRange(-0.1, 0.1);
 		errorPID.setSetpoint(0);
@@ -185,25 +194,18 @@ public class Lifter {
 	}
 	
 	public double getLeftActuatorLength(){
-		double slope = (maxLengthL - minLengthL)/(maxPotValueL - minPotValueL);
-		double potValue = leftActuator.getAnalogInPosition();
+		double slope  = 0.014;//= (maxLengthL - minLengthL)/(maxPotValueL - minPotValueL);
+		double potValue = leftActuator.getAnalogInRaw();
 		double length;
 		length = slope * (potValue - maxPotValueL) + maxLengthL;
-		System.out.println("Pot Value: "+ potValue);
 		return length;
 	}
 	public double getRightActuatorLength(){
-		double slope = (maxLengthR - minLengthR)/(maxPotValueR - minPotValueR);
-		double potValue = rightActuator.getAnalogInPosition();
+		double slope = 0.014;//(maxLengthR - minLengthR)/(maxPotValueR - minPotValueR);
+		double potValue = rightActuator.getAnalogInRaw();
 		double length;
 		length = slope * (potValue - maxPotValueR) + maxLengthR;
 		return length;
-	}
-	public double inchesToPotValueL(double length){
-		double slope = (maxPotValueR - minPotValueR)/(maxLengthR - minLengthR);
-		double correspondingPotValue;
-		correspondingPotValue = slope * (length - maxLengthR) + maxPotValueL;
-		return correspondingPotValue;
 	}
 	
 	/*public void extendLeft(double target){
@@ -239,7 +241,6 @@ public class Lifter {
 			rightActPID.setSetpoint(lifterTarget);
 		
 			SmartDashboard.putNumber("Target: ", lifterTarget);
-			System.out.println("CurrentLeft" + getLeftActuatorLength());
 			
 		
 			SmartDashboard.putNumber("Left Current Length: ", getLeftActuatorLength());
@@ -250,12 +251,19 @@ public class Lifter {
 			SmartDashboard.putNumber("PID Output Error: ", errorPIDOutput.getPIDValue());
 		
 			//set motors to desired speed
+			System.out.println("Moving MotorL: " + leftActPIDOutput.getPIDValue());
+			System.out.println("PotValueL" + leftActuator.getAnalogInPosition());
+			
+			System.out.println("Moving MotorR: " + rightActPIDOutput.getPIDValue());
+			System.out.println("PotValuer" + rightActuator.getAnalogInPosition());
+			
 			leftActuator.set(leftActPIDOutput.getPIDValue());// + errorPIDOutput.getPIDValue());
 			SmartDashboard.putNumber("Left Actuator Speed: ", leftActuator.get());
 			rightActuator.set(rightActPIDOutput.getPIDValue());// - errorPIDOutput.getPIDValue());
 			SmartDashboard.putNumber("Right Actuator Speed: ", rightActuator.get());//.getPIDValue() + errorPIDOutput.getPIDValue());
 		//}
 			//Does not allow the robot to break itself by throwing arm out of wack
+			/*
 			if ((leftActuator.isFwdLimitSwitchClosed() || rightActuator.isFwdLimitSwitchClosed()) && ((lifterTarget > getLeftActuatorLength()) || (lifterTarget > getRightActuatorLength()))){
 				leftActuator.set(0);
 				rightActuator.set(0);
@@ -264,7 +272,7 @@ public class Lifter {
 				rightActuator.set(0);
 			} else {
 
-			}
+			}*/
 
 	}
 	/**
@@ -278,5 +286,162 @@ public class Lifter {
 	 */
 	public void lower(){
 		changeTarget(lifterTarget -= .01);
+	}
+	
+	public void absoluteRaise(){
+		leftActuator.set(.4);
+		rightActuator.set(.4);
+	}
+	
+	public void absoluteLower(){
+		leftActuator.set(-.4);
+		rightActuator.set(-.4);
+	}
+	
+	public void absoluteStop(){
+		leftActuator.set(0);
+		rightActuator.set(0);
+	}
+	
+	public void moveLeft(int direction){
+		leftActuator.set(.4 * direction);
+	}
+	
+	public void moveRight(int direction){
+		rightActuator.set(.4 * direction);
+	}
+	
+	public void printPotValues(){
+		SmartDashboard.putNumber("LeftPotPos", leftActuator.getAnalogInPosition());
+		SmartDashboard.putNumber("RightPotPos", rightActuator.getAnalogInPosition());
+		
+		SmartDashboard.putNumber("LeftPotRaw", leftActuator.getAnalogInRaw());
+		SmartDashboard.putNumber("RightPotRaw", rightActuator.getAnalogInRaw());
+		
+		SmartDashboard.putBoolean("LeftFWD", leftActuator.isFwdLimitSwitchClosed());
+		SmartDashboard.putBoolean("LeftREV", leftActuator.isRevLimitSwitchClosed());
+		SmartDashboard.putBoolean("RightFWD", rightActuator.isFwdLimitSwitchClosed());
+		SmartDashboard.putBoolean("RightREV", rightActuator.isRevLimitSwitchClosed());
+	}
+	/**
+	 * Always add to rightActuatorSpeed
+	 * @return modifier to cause right actuator to catch up to left
+	 */
+	public double speedModifier(){
+		double speedModifier;
+		speedModifier = (getLeftActuatorLength() - getRightActuatorLength()) * speedConstant;
+		return speedModifier;
+	}
+	
+	public void threadedGoToPos(boolean isEnabled){
+		Thread thread = new Thread(new Runnable(){
+			public void run(){
+				isRunning = true;
+				System.out.println("In thread");
+				/*while (Math.abs(targetPosition - getLeftActuatorLength()) > .1 ){
+					if ((targetPosition > getLeftActuatorLength())){// && (Math.abs(getLeftActuatorLength() - getRightActuatorLength()) < .15)){
+						leftActuator.set(.5);
+						System.out.println("Going up");
+					} else if ((targetPosition < getLeftActuatorLength())){// && (Math.abs(getLeftActuatorLength() - getRightActuatorLength()) < .15)){
+						leftActuator.set(-.5);
+						System.out.println ("Going down");
+					} else if (targetPosition == getLeftActuatorLength()){
+						leftActuator.set(0);
+					}
+					
+					if (targetPosition > getRightActuatorLength()){
+						rightActuator.set(.5);
+
+					} else if (targetPosition < getRightActuatorLength()){
+						rightActuator.set(-.5);
+					} else if (targetPosition == getRightActuatorLength()){
+						leftActuator.set(0);
+					}
+					System.out.println("In thread");
+				
+				}*/
+				if (getLeftActuatorLength() < lifterTarget || getRightActuatorLength() < lifterTarget) {
+					/*while (getLeftActuatorLength() != lifterTarget || getRightActuatorLength() != lifterTarget ){
+						if (getLeftActuatorLength() < lifterTarget){
+							if (speedModifier() < 0){
+								leftActuator.set(.3 - speedModifier());
+							} else {
+								leftActuator.set(.3);
+							}
+							System.out.println("Lup");
+						} else {
+							leftActuator.set(0);
+						}
+						
+						if (getRightActuatorLength() < lifterTarget){
+							if (speedModifier() > 0){
+								rightActuator.set(.3 + speedModifier());
+							} else {
+								rightActuator.set(.3);
+							}
+							System.out.println("Rup");
+						} else {
+							rightActuator.set(0);
+						}
+						
+						System.out.println("Thread1");
+						hasAlreadyMoved = true;
+					}*/
+					double speed = 0.3;
+					double leftSpeed = 0.0;
+					double rightSpeed = 0.0;
+					while ((getLeftActuatorLength() - lifterTarget) < .1 || (getRightActuatorLength() - lifterTarget) < .1){
+						if (getLeftActuatorLength() < lifterTarget){
+							leftSpeed = speed;
+						}
+						if (getRightActuatorLength() < lifterTarget){
+							rightSpeed = speed;
+						}
+						double offset = getLeftActuatorLength() - getRightActuatorLength();
+						double slope = 1;
+						rightSpeed += offset * slope;
+						
+						leftActuator.set(leftSpeed);
+						rightActuator.set(rightSpeed);
+					}
+				}
+				if (!hasAlreadyMoved && ((getLeftActuatorLength() > lifterTarget || getRightActuatorLength() > lifterTarget))){
+					while ((getLeftActuatorLength() != lifterTarget || getRightActuatorLength() != lifterTarget)){
+						if (getLeftActuatorLength() > lifterTarget){
+							if (speedModifier() < 0){
+								leftActuator.set(-.3 - speedModifier());
+							} else {
+								leftActuator.set(-.3);
+							}
+							System.out.println("Ldown");
+						} else {
+							leftActuator.set(0);
+						}
+						
+						if (getRightActuatorLength() > lifterTarget){
+							if (speedModifier() > 0){
+								rightActuator.set(-.3 + speedModifier());
+							} else {
+								rightActuator.set(-.3);
+							}
+							System.out.println ("Rdown");
+						} else {
+							rightActuator.set(0);
+						}
+						
+						System.out.println(hasAlreadyMoved);
+					}
+				}
+				
+				leftActuator.set(0);
+				rightActuator.set(0);
+				hasAlreadyMoved = false;
+				isRunning = false;
+			}
+		});
+		
+		if (!isRunning){
+			thread.start();
+		}
 	}
 }

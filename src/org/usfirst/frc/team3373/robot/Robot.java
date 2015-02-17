@@ -42,6 +42,7 @@ public class Robot extends SampleRobot {
     Indexer indexer;
     SwerveControl swerve;
     Lifter lifter;
+
     
     //Controllers
     DigitalInput ones;
@@ -63,6 +64,7 @@ public class Robot extends SampleRobot {
     int RY = 5;
     
     boolean first_iteration;
+    int index;//used for 16 switch
     
 
     /***************************
@@ -106,6 +108,7 @@ public class Robot extends SampleRobot {
         twos = new DigitalInput(7);
         fours = new DigitalInput(8);
         eights = new DigitalInput(9);
+
         
         
         
@@ -298,7 +301,105 @@ public class Robot extends SampleRobot {
      * Runs during test mode
      */
     public void test() {
+
     	while (isTest() && isEnabled()){
+    		index = 0;
+        	if(ones.get()){
+        		index += 1;
+        	}
+        	if(twos.get()){
+        		index += 2;
+        	}
+        	if(fours.get()){
+        		index += 4;
+        	}
+        	if(eights.get()){
+        		index += 8;
+        	}
+        	System.out.println(index);
+    		switch(index){
+    		case 0://swerve drive
+    			if(driver.isLStickPushed()){
+                	swerve.switchToFieldCentric();
+                }
+                if(driver.getRawAxis(Ltrigger) > 0.2){
+                	swerve.switchToObjectCentric();
+                }
+                if(driver.isRStickPushed()){
+                	swerve.switchToRobotCentric();
+                }
+                swerve.changeOrientation(driver.isYPushed(), driver.isBPushed(), driver.isAPushed(), driver.isXPushed());
+                swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+    			break;
+    		case 1://lifter Calibration mode
+    			if (driver.isAHeld()){
+                	lifter.moveLeft(1);
+                } else if (driver.isBHeld()){
+                	lifter.moveRight(1);
+                } else if (driver.isYHeld()){
+                	lifter.moveRight(-1);
+                } else if (driver.isXHeld()){
+                	lifter.moveLeft(-1);
+                } else {
+                	lifter.absoluteStop();
+                }
+    			break;
+    		case 2://lifter target Control
+                if (driver.isAHeld()){
+                	lifter.absoluteRaise();
+                } else if (driver.isBHeld()){
+                	lifter.absoluteLower();
+                } else if (driver.isYHeld()){
+                	lifter.moveRight(-1);
+                } else if (driver.isXHeld()){
+                	lifter.moveLeft(-1);
+                } else {
+                	lifter.absoluteStop();
+                }
+    			break;
+    		case 3: //autoLift
+    			if (driver.isAPushed()){
+    				lifter.changeTarget(4);
+    				lifter.threadedGoToPos(isEnabled());
+    			} else if (driver.isBPushed()){
+    				lifter.changeTarget((6));
+    				lifter.threadedGoToPos(isEnabled());
+    			} else if (driver.isXPushed()){
+    				lifter.changeTarget(lifter.lifterTarget - 1);
+    				lifter.threadedGoToPos(isEnabled());
+    			} else if (driver.isYPushed()){
+    				lifter.changeTarget(lifter.lifterTarget + 1);
+    				lifter.threadedGoToPos(isEnabled());
+    			}
+    			break;
+    		case 4: //indexer
+    			indexer.controlArms(driver.getRawAxis(LX));
+    			break;
+    		case 5:
+    			break;
+    		case 6:
+    			break;
+    		case 7:
+    			break;
+    		case 8:
+    			break;
+    		case 9:
+    			break;
+    		case 10:
+    			break;
+    		case 11:
+    			break;
+    		case 12:
+    			break;
+    		case 13:
+    			break;
+    		case 14:
+    			break;
+    		case 15:
+    			break;
+    		default:
+    			//We should never get here
+    	}
     		//indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
     		//System.out.println("POV" + stick1.getPOV());
     		/*
@@ -321,7 +422,7 @@ public class Robot extends SampleRobot {
             
             //swerve.test();
 
-            //indexer.controlMotors(stick1.getRawAxis(LX), stick1.getRawAxis(RX));
+            
             
      
             
@@ -372,10 +473,10 @@ public class Robot extends SampleRobot {
             	swerve.switchToRobotCentric();
             }
             
-            
-            swerve.changeOrientation(stick1.isYPushed(), stick1.isBPushed(), stick1.isAPushed(), stick1.isXPushed());
-            swerve.move(-stick1.getRawAxis(LY), stick1.getRawAxis(LX), stick1.getRawAxis(RX));
             */
+            //swerve.changeOrientation(driver.isYPushed(), driver.isBPushed(), driver.isAPushed(), driver.isXPushed());
+            //swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+            
             
             /*SmartDashboard.putNumber("Back Left Current Encoder Reading", swerve.BLWheel.rotateMotor.getEncPosition());
             SmartDashboard.putNumber("Front Left Current Encoder Reading", swerve.FLWheel.rotateMotor.getEncPosition());
@@ -409,6 +510,31 @@ public class Robot extends SampleRobot {
             	twoTalon.set(15000);
             }*/
             
+            
+            
+
+            //indexer.controlArms(driver.getRawAxis(LX));
+            /*
+            if (driver.isAPushed()){
+            	lifter.changeTarget(3);
+            } else if (driver.isBPushed()){
+            	lifter.changeTarget(5);
+            } else if (driver.isXPushed()){
+            	lifter.changeTarget(lifter.lifterTarget - 1);
+            } else if (driver.isYPushed()){
+            	lifter.changeTarget(lifter.lifterTarget + 1);
+            }
+            
+            lifter.goToLength();*/
+            
+            /*if (driver.isAPushed()){
+            	lifter.threadedGoToPos(4, isEnabled());
+            } else if (driver.isBPushed()){
+            	lifter.threadedGoToPos(6, isEnabled());
+            }*/
+            
+            
+            lifter.printPotValues();
             driver.clearButtons();
             shooter.clearButtons();
     	}

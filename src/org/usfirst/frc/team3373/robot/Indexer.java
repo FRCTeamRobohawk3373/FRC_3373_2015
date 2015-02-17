@@ -16,8 +16,8 @@ public class Indexer {
 	private double maxOutput = 0.4;
 	private double output = maxOutput;
 	private double current;
-	private double maxCurrent = 0.9;
-	private double minCurrent = 0.7;
+	private double maxCurrent = 0.7;
+	private double minCurrent = 0.4;
 	
 	/**
 	 * Initializes an indexer object. 
@@ -44,19 +44,20 @@ public class Indexer {
 	public void controlArms(double LX){
 		if(current > maxCurrent){
 			output -= 0.05;
-		} else if(current < minCurrent){
+		} /*else if(current < minCurrent){
 			output += 0.05;
-		}
+		}*/
 		
 		if(output > maxOutput){
 			output = maxOutput;
 		} else if(output < 0){
 			output = 0;
 		}
-		
+		SmartDashboard.putNumber("Current: ", armMotor.getOutputCurrent());
+		SmartDashboard.putNumber("Output: ", output);
 		if(LX > 0.1){
 			armMotor.set(-output);
-		} else if(LX < 0.1) {
+		} else if(LX < -0.1) {
 			armMotor.set(output);
 		} else{
 			armMotor.set(0);
