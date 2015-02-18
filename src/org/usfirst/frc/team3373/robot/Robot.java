@@ -84,12 +84,14 @@ public class Robot extends SampleRobot {
     int frontRightDrive = 1;
     int backLeftDrive = 2;
     int backRightDrive = 3;
-    
-    double robotWidth = 21;
-    double robotLength = 29;
-    
+
     boolean haveRun;
-    
+        
+    double robotWidth = 20.5;
+    double robotLength = 33.5;
+    double rotateRadius = 0.;
+    double objectDistance = 60.;
+    double stackDistance = 45.;
     
     public Robot() {
     	//Initialize controllers
@@ -97,7 +99,7 @@ public class Robot extends SampleRobot {
         shooter = new SuperJoystick(1);
         //Initialize robot sub-systems
         lifter = new Lifter(4, 5);
-        indexer = new Indexer(8, 9, 6);
+        indexer = new Indexer(4, 5, 6);
         swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
         		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
         	    backRightRotate, robotWidth, robotLength);
@@ -226,26 +228,32 @@ public class Robot extends SampleRobot {
     		 ****************************/
     		
     		//Driving
-    		swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
     		if(driver.isLBHeld()){
-    			//turbo mode
+    			swerve.setSpeedMode("turbo");
     		} else if(driver.isRBHeld()){
-    			//sniper mode
+    			swerve.setSpeedMode("sniper");
     		} else{
-    			//default speed
-    		}
+    			swerve.setSpeedMode("normal");
+    		} 
     		
     		//Switching Driving modes
     		if(driver.isRStickHeld()){
-    			//Robot Centric mode
+    			rotateRadius = 0.0;
+    			swerve.isFieldCentric = false;
     		} else if(driver.isLStickPushed()){
-    			//Field Centric mode
+    			swerve.isFieldCentric = true;
     		} else if(driver.getRawAxis(Rtrigger) > 0.2){
-    			//Object Centric
+    			rotateRadius = objectDistance;
+    			swerve.isFieldCentric = false;
     		} else if(driver.getRawAxis(Ltrigger) > 0.2){
-    			//Hook/Load Centric
+    			rotateRadius = stackDistance;
+    			swerve.isFieldCentric = false;
     		}
     		
+    		swerve.swerveControl(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX), rotateRadius);
+
+    		
+
     		/*****************************
     		 * Shooter Specific Controls *
     		 *****************************/
@@ -319,18 +327,35 @@ public class Robot extends SampleRobot {
         	System.out.println(index);
     		switch(index){
     		case 0://swerve drive
-    			if(driver.isLStickPushed()){
-                	swerve.switchToFieldCentric();
-                }
-                if(driver.getRawAxis(Ltrigger) > 0.2){
-                	swerve.switchToObjectCentric();
-                }
-                if(driver.isRStickPushed()){
-                	swerve.switchToRobotCentric();
-                }
-                swerve.changeOrientation(driver.isYPushed(), driver.isBPushed(), driver.isAPushed(), driver.isXPushed());
-                swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
-    			break;
+        		if(driver.isLBHeld()){
+        			swerve.setSpeedMode("turbo");
+        		} else if(driver.isRBHeld()){
+        			swerve.setSpeedMode("sniper");
+        		} else{
+        			swerve.setSpeedMode("normal");
+        		} 
+        		
+        		//Switching Driving modes
+        		if(driver.isRStickHeld()){
+        			rotateRadius = 0.0;
+        			swerve.isFieldCentric = false;
+        			System.out.println("In Robot Centric");
+        		} else if(driver.isLStickPushed()){
+        			System.out.println("In Field Centric");
+        			swerve.isFieldCentric = true;
+        			rotateRadius = 0.0;
+        		} else if(driver.getRawAxis(Rtrigger) > 0.2){
+        			System.out.println("In Object Centric");
+        			rotateRadius = objectDistance;
+        			swerve.isFieldCentric = false;
+        		} else if(driver.getRawAxis(Ltrigger) > 0.2){
+        			System.out.println("In Stack Centric");
+        			rotateRadius = stackDistance;
+        			swerve.isFieldCentric = false;
+        		}
+        		
+        		swerve.swerveControl(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX), rotateRadius);
+
     		case 1://lifter Calibration mode
     			if (driver.isAHeld()){
                 	lifter.moveLeft(1);
@@ -374,6 +399,7 @@ public class Robot extends SampleRobot {
     			break;
     		case 4: //indexer
     			indexer.controlArms(driver.getRawAxis(LX));
+    			indexer.wheelControl(driver.getRawAxis(LY), driver.getRawAxis(RY));
     			break;
     		case 5:
     			break;

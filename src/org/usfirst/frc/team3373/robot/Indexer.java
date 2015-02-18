@@ -13,11 +13,11 @@ public class Indexer {
 	private CANTalon armMotor;
 	private double max;
 	private double min;
-	private double maxOutput = 0.4;
+	private double maxOutput = 0.25;
 	private double output = maxOutput;
 	private double current;
-	private double maxCurrent = 0.7;
-	private double minCurrent = 0.4;
+	private double maxCurrent = 0.3;
+	private double minCurrent = 0.15;
 	
 	/**
 	 * Initializes an indexer object. 
@@ -42,11 +42,12 @@ public class Indexer {
 	}
 	
 	public void controlArms(double LX){
+		current = armMotor.getOutputCurrent();
 		if(current > maxCurrent){
-			output -= 0.05;
-		} /*else if(current < minCurrent){
+			output = 0.1;
+		} else if(current < minCurrent){
 			output += 0.05;
-		}*/
+		}
 		
 		if(output > maxOutput){
 			output = maxOutput;
@@ -55,6 +56,7 @@ public class Indexer {
 		}
 		SmartDashboard.putNumber("Current: ", armMotor.getOutputCurrent());
 		SmartDashboard.putNumber("Output: ", output);
+		SmartDashboard.putNumber("Left Axis: ", LX);
 		if(LX > 0.1){
 			armMotor.set(-output);
 		} else if(LX < -0.1) {

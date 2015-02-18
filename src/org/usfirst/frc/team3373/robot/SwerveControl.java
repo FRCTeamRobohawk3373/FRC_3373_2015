@@ -28,7 +28,6 @@ public class SwerveControl  {
 	Talon driveRBMotor;
 	CANTalon rotateRBMotor;
 	
-	Talon dummyMotor = new Talon(5);
 	
 	
 	//NavX
