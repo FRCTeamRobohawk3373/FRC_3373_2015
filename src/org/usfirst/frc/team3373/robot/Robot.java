@@ -236,6 +236,11 @@ public class Robot extends SampleRobot {
     			swerve.setSpeedMode("normal");
     		} 
     		
+    		swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+    		
+    		
+    		
+    		/* This is nick's pretty code, not yet working
     		//Switching Driving modes
     		if(driver.isRStickHeld()){
     			rotateRadius = 0.0;
@@ -251,7 +256,7 @@ public class Robot extends SampleRobot {
     		}
     		
     		swerve.swerveControl(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX), rotateRadius);
-
+			*/
     		
 
     		/*****************************
@@ -271,9 +276,9 @@ public class Robot extends SampleRobot {
     		}
     		//Manual lifter control
     		if(shooter.getRawAxis(Ltrigger) > 0.3){
-    			//raise lifter
+    			lifter.absoluteLower();
     		} else if(shooter.getRawAxis(Rtrigger) > 0.3){
-    			//lower lifter
+    			lifter.absoluteRaise();
     		}
     		
     		/*******************
