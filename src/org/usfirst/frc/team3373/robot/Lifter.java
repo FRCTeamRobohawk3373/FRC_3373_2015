@@ -37,15 +37,15 @@ public class Lifter {
 	double potScalarL = 763;
 	double casingLength = 12;
 	//Right Actuator
-	double maxPotValueR = 934.0;
-	double minPotValueR = 143.0;
-	double maxLengthR = 12.0;//in inches
-	double minLengthR = 1.0 + (3.0/4.0);//in inches
+	double maxPotValueR = 964.0;
+	double minPotValueR = 134.0;
+	double maxLengthR = 12.3125;//in inches
+	double minLengthR = 1.6875;//in inches
 	//left Actuator
-	double maxPotValueL = 1015.0;
-	double minPotValueL = 279.0;
-	double maxLengthL = 11 + (5.0/8.0);//in inches
-	double minLengthL = 2.0 + (1.0/8.0);//in inches
+	double maxPotValueL = 957.0;
+	double minPotValueL = 139.0;
+	double maxLengthL = 12.25;//in inches
+	double minLengthL = 1.6875;//in inches
 	
 	double diffBetweenPots = 0;
 	
@@ -70,6 +70,18 @@ public class Lifter {
 	PIDController leftActPID = new PIDController(10, 0, 5, leftActPIDInput, leftActPIDOutput);
 	PIDController rightActPID = new PIDController(10, 0, 5, rightActPIDInput, rightActPIDOutput);
 	PIDController errorPID = new PIDController(3, 0, 0, errorPIDInput, errorPIDOutput);
+	
+	//New Variables
+	double targetPosition = 2;
+	double deltaR;
+	double deltaL;
+	double modifierR = 0.5;
+	double modifierL = 0.5;
+	double rightSpeed;
+	double leftSpeed;
+	double maxSpeed = 60;//In pot units per 10 milliseconds
+	double minSpeed = 20;
+	
 	
 	/**
 	 * Initializes Lifter class, feeds in motor values to control lifting motors
@@ -96,9 +108,11 @@ public class Lifter {
 		rightActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
 		leftActuator.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogPot);
 		
+		leftActuator.changeControlMode(CANTalon.ControlMode.Speed);
+		rightActuator.changeControlMode(CANTalon.ControlMode.Speed);
 		
-		leftActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
-		rightActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
+		//leftActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
+		//rightActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		
 		lifterTarget = getLeftActuatorLength();
 		
@@ -210,6 +224,16 @@ public class Lifter {
 		return length;
 	}
 	
+	public int inchesToPotR(double lengthInInches){
+		int potValue = (int)(lengthInInches * (maxPotValueR/maxLengthR));
+		return potValue;
+	}
+	
+	public int inchesToPotL(double lengthInInches){
+		int potValue = (int)(lengthInInches * (maxPotValueL/maxLengthL));
+		return potValue;
+	}
+	
 	/*public void extendLeft(double target){
 		if(Math.abs(target-leftActuator.getAnalogInPosition()) > 2){
 			updatePIDControllers();
@@ -301,15 +325,19 @@ public class Lifter {
 	}
 	
 	public void absoluteStop(){
+		leftActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
+		rightActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		leftActuator.set(0);
 		rightActuator.set(0);
 	}
 	
 	public void moveLeft(int direction){
+		leftActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		leftActuator.set(.4 * direction);
 	}
 	
 	public void moveRight(int direction){
+		rightActuator.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		rightActuator.set(.4 * direction);
 	}
 	
@@ -461,5 +489,57 @@ public class Lifter {
 		if (!isRunning){
 			thread.start();
 		}
+	}
+	public void changeTargetPosition(double targetInInches){
+		targetPosition = targetInInches;
+	}
+	
+	public void goToPosition(){
+		deltaR = targetPosition - getRightActuatorLength();
+		deltaL = targetPosition - getLeftActuatorLength();
+		
+		rightSpeed = modifierR * inchesToPotR(deltaR);
+		leftSpeed = modifierL * inchesToPotL(deltaL);
+		
+
+		SmartDashboard.putNumber("TargetPos: ", targetPosition);
+		SmartDashboard.putNumber("DeltaR", deltaR);
+		SmartDashboard.putNumber("DeltaL", deltaL);
+		
+		if(rightSpeed > maxSpeed){
+			rightSpeed = maxSpeed;
+		} else if(rightSpeed < -maxSpeed){
+			rightSpeed = -maxSpeed;
+		} else if(rightSpeed > 0 && rightSpeed < minSpeed){
+			rightSpeed = minSpeed;
+		} else if(rightSpeed < 0 && rightSpeed > -minSpeed){
+			rightSpeed = -minSpeed;
+		}
+		
+		if(leftSpeed > maxSpeed){
+			leftSpeed = maxSpeed;
+		} else if(leftSpeed < -maxSpeed){
+			leftSpeed = -maxSpeed;
+		} else if(leftSpeed > 0 && leftSpeed < minSpeed){
+			leftSpeed = minSpeed;
+		} else if(leftSpeed < 0 && leftSpeed > -minSpeed){
+			leftSpeed = -minSpeed;
+		}
+		
+		SmartDashboard.putNumber("Right Speed: ", rightSpeed);
+		SmartDashboard.putNumber("Left Speed", leftSpeed);
+		
+		
+		if(Math.abs(targetPosition - getRightActuatorLength()) > 0.1){
+			rightActuator.set(rightSpeed);
+		} else {
+			rightActuator.set(0);
+		}
+		if(Math.abs(targetPosition - getLeftActuatorLength()) > 0.1){
+			leftActuator.set(leftSpeed);
+		} else {
+			leftActuator.set(0);
+		}
+		
 	}
 }

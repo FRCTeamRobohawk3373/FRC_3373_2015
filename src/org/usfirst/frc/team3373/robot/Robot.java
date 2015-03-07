@@ -98,7 +98,7 @@ public class Robot extends SampleRobot {
         driver = new SuperJoystick(0);
         shooter = new SuperJoystick(1);
         //Initialize robot sub-systems
-        lifter = new Lifter(4, 5);
+        lifter = new Lifter(5, 4);
         indexer = new Indexer(4, 5, 6);
         swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
         		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
@@ -235,8 +235,18 @@ public class Robot extends SampleRobot {
     		} else{
     			swerve.setSpeedMode("normal");
     		} 
+    		/*
+            if(driver.isLStickPushed()){
+            	swerve.switchToFieldCentric();
+            }
+            if(driver.getRawAxis(Rtrigger) > 0.2){
+            	swerve.switchToObjectCentric();
+            }
+            if(driver.isRStickPushed()){
+            	swerve.switchToRobotCentric();
+            }*/
     		
-    		swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+    		swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), -driver.getRawAxis(RX));
     		
     		
     		
@@ -245,7 +255,7 @@ public class Robot extends SampleRobot {
     		if(driver.isRStickHeld()){
     			rotateRadius = 0.0;
     			swerve.isFieldCentric = false;
-    		} else if(driver.isLStickPushed()){
+    		} else if(driver.isLStickPushed()){	
     			swerve.isFieldCentric = true;
     		} else if(driver.getRawAxis(Rtrigger) > 0.2){
     			rotateRadius = objectDistance;
@@ -279,6 +289,8 @@ public class Robot extends SampleRobot {
     			lifter.absoluteLower();
     		} else if(shooter.getRawAxis(Rtrigger) > 0.3){
     			lifter.absoluteRaise();
+    		} else{
+    			lifter.absoluteStop();
     		}
     		
     		/*******************
@@ -316,6 +328,36 @@ public class Robot extends SampleRobot {
     public void test() {
 
     	while (isTest() && isEnabled()){
+    		
+    		
+    		if(driver.isAPushed()){
+    			lifter.changeTargetPosition(4);
+    		} else if(driver.isBPushed()){
+    			lifter.changeTargetPosition(6);
+    		} else if(driver.isXPushed()){
+    			lifter.changeTargetPosition(8);
+    		} else if(driver.isYPushed()){
+    			lifter.changeTargetPosition(10);
+    		}
+    		
+    		lifter.goToPosition();
+    		
+    		
+    		/*
+			if (driver.isAHeld()){
+            	lifter.moveLeft(1);
+            } else if (driver.isBHeld()){
+            	lifter.moveRight(1);
+            } else if (driver.isYHeld()){
+            	lifter.moveRight(-1);
+            } else if (driver.isXHeld()){
+            	lifter.moveLeft(-1);
+            } else {
+            	lifter.absoluteStop();
+            }*/
+    		
+    		
+    		/*
     		index = 0;
         	if(ones.get()){
         		index += 1;
@@ -430,7 +472,7 @@ public class Robot extends SampleRobot {
     			break;
     		default:
     			//We should never get here
-    	}
+    	}*/
     		//indexer.wheelControl(stick1.getRawAxis(LY), stick1.getRawAxis(RY));
     		//System.out.println("POV" + stick1.getPOV());
     		/*
