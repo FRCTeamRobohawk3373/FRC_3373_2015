@@ -423,9 +423,6 @@ public class SwerveControl  {
     	BLWheel.drive();
     	
     }
-    /**
-     * Called by calculateObjectControl Method (Do Not Use)
-     */
     
     public void swerveControl(double LY, double LX, double RX, double radius){
     	double translationalXComponent = LX;
@@ -470,11 +467,18 @@ public class SwerveControl  {
     	//Calculate each wheel's rotational speed based on the radius
     	//THIS ONLY ALLOWS FOR A POSITVE RADIUS
     	double speedRatio = Math.sqrt(Math.pow((robotWidth/2), 2) + Math.pow(distanceToFront, 2)) / Math.sqrt(Math.pow((robotWidth/2), 2) + Math.pow(distanceToBack, 2));
+    	
+    	BLWheel.setSpeed(rAxis);
+    	BRWheel.setSpeed(rAxis);
+    	FLWheel.setSpeed(speedRatio * rAxis);
+    	FRWheel.setSpeed(speedRatio * rAxis);
+    	
+    	/*This seems wrong, copied code from above
     	BLWheel.setRSpeed(1);
     	BRWheel.setRSpeed(1);
     	FLWheel.setRSpeed(speedRatio);
     	FRWheel.setRSpeed(speedRatio);
-    	
+    	*/
     	double fastestSpeed = 0.0;
     	for (SwerveWheel wheel : wheelArray){
     		

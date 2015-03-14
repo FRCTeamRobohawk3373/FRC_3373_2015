@@ -42,6 +42,7 @@ public class Robot extends SampleRobot {
     Indexer indexer;
     SwerveControl swerve;
     Lifter lifter;
+    Timer robotTimer;
 
     
     //Controllers
@@ -98,7 +99,7 @@ public class Robot extends SampleRobot {
         driver = new SuperJoystick(0);
         shooter = new SuperJoystick(1);
         //Initialize robot sub-systems
-        lifter = new Lifter(5, 4);
+        lifter = new Lifter(4, 5);
         indexer = new Indexer(4, 5, 6);
         swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
         		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
@@ -111,7 +112,7 @@ public class Robot extends SampleRobot {
         fours = new DigitalInput(8);
         eights = new DigitalInput(9);
 
-        
+        robotTimer = new Timer();
         
         
         haveRun = false;
@@ -326,22 +327,31 @@ public class Robot extends SampleRobot {
      * Runs during test mode
      */
     public void test() {
-
+    	if(isTest() && isDisabled()){
+    		lifter.shutdownCounter = 0;
+    	}
     	while (isTest() && isEnabled()){
+        	
     		
+    		
+    		//swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+
     		
     		if(driver.isAPushed()){
-    			lifter.changeTargetPosition(4);
+    			lifter.changeTargetHeight(2.5);
     		} else if(driver.isBPushed()){
-    			lifter.changeTargetPosition(6);
+    			lifter.changeTargetHeight(6);
     		} else if(driver.isXPushed()){
-    			lifter.changeTargetPosition(8);
+    			lifter.changeTargetHeight(8);
     		} else if(driver.isYPushed()){
-    			lifter.changeTargetPosition(10);
+    			lifter.changeTargetHeight(10);
     		}
     		
-    		lifter.goToPosition();
+    		lifter.goToHeightOffGround();
     		
+    		if(driver.isLBHeld()){
+    			lifter.shutdownCounter = 0;
+    		}
     		
     		/*
 			if (driver.isAHeld()){
@@ -575,7 +585,7 @@ public class Robot extends SampleRobot {
             
             //SmartDashboard.putBoolean("fwdLimit", actuator.isFwdLimitSwitchClosed());
             //SmartDashboard.putBoolean("RevLimit", actuator.isRevLimitSwitchClosed());
-            Timer.delay(.01);
+            Timer.delay(0.01);
 
             /*if (stick1.isAPushed()){
             	twoTalon.set(20000);

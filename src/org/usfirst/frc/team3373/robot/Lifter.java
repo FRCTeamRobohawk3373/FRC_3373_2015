@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Lifter {
 	CANTalon leftActuator;//currently ID 5
 	CANTalon rightActuator;//currently ID 6
+
+	LookupTable lookupTable = new LookupTable();
 	
 	double pr = 10;
 	double ir = 10;
@@ -36,12 +38,12 @@ public class Lifter {
 	double potScalarR = 783;
 	double potScalarL = 763;
 	double casingLength = 12;
-	//Right Actuator
+	//Right Actuator THIS CALIBRATION IS CURRENTLY BROKEN
 	double maxPotValueR = 964.0;
 	double minPotValueR = 134.0;
 	double maxLengthR = 12.3125;//in inches
 	double minLengthR = 1.6875;//in inches
-	//left Actuator
+	//left Actuator THIS CALIBRATION IS CURRENTLY BROKEN
 	double maxPotValueL = 957.0;
 	double minPotValueL = 139.0;
 	double maxLengthL = 12.25;//in inches
@@ -72,15 +74,37 @@ public class Lifter {
 	PIDController errorPID = new PIDController(3, 0, 0, errorPIDInput, errorPIDOutput);
 	
 	//New Variables
-	double targetPosition = 2;
+	double targetHeight = 5;
+	double targetRightPosition;
+	double targetLeftPosition;
 	double deltaR;
 	double deltaL;
-	double modifierR = 0.5;
-	double modifierL = 0.5;
+	double modifierR = 1 * .90;
+	double modifierL = 1;
 	double rightSpeed;
 	double leftSpeed;
-	double maxSpeed = 60;//In pot units per 10 milliseconds
+	double maxSpeed = 100;
 	double minSpeed = 20;
+	double maxSpeedR = maxSpeed;//In pot units per 10 milliseconds
+	double minSpeedR = minSpeed;
+	double maxSpeedL = maxSpeed;
+	double minSpeedL = minSpeed;
+	
+	double inchesOffGroundR;
+	double inchesOffGroundL;
+	double deltaBetweenActuators;
+	double errorCompensation;//this will be applied to maxSpeed L
+	
+	int shutdownCounter;
+	
+	//Calibration relating height of hook off ground to pot values on each arm
+	
+	double[] heightOffGround = {2,3,4,5,6,7,8,9,10,11};//In inches
+	double[] heightOffGroundL = {1.96875, 2.875, 4.15625, 5.03125, 5.96875, 7.0625, 8.125, 9.09375, 9.9375, 11.0625};
+	double[] heightOffGroundR = {2.1875, 3, 4.0626, 4.96875, 6.09375, 7.1875, 8.25, 9.0625, 9.9375, 11.0125};
+	double[] rightPot = {180, 241, 324, 392, 478, 561,  642, 707, 772, 866};//relates the pot of the right Actuator
+	double[] leftPot = {162, 230, 330, 396, 468, 549, 633, 708, 774, 860};//relates the pot of the left Actuator
+	
 	
 	
 	/**
@@ -490,56 +514,149 @@ public class Lifter {
 			thread.start();
 		}
 	}
-	public void changeTargetPosition(double targetInInches){
-		targetPosition = targetInInches;
+	public void changeTargetHeight(double heightOfHookOffGroundInInches){
+		targetHeight = heightOfHookOffGroundInInches;
 	}
 	
-	public void goToPosition(){
-		deltaR = targetPosition - getRightActuatorLength();
-		deltaL = targetPosition - getLeftActuatorLength();
+	public void goToHeightOffGround(){
+		if(shutdownCounter < 5){
 		
-		rightSpeed = modifierR * inchesToPotR(deltaR);
-		leftSpeed = modifierL * inchesToPotL(deltaL);
+			targetRightPosition = lookupTable.lookUpValue(targetHeight, heightOffGroundR, rightPot);
+			targetLeftPosition = lookupTable.lookUpValue(targetHeight, heightOffGroundL, leftPot);
 		
+		
+			inchesOffGroundL = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
+			inchesOffGroundR = lookupTable.lookUpValue(rightActuator.getAnalogInRaw(), rightPot, heightOffGroundR);
+			
+			
+			if(leftActuator.getAnalogInRaw() < targetLeftPosition){
+				deltaBetweenActuators = inchesOffGroundL - inchesOffGroundR;
+			} else {
+				deltaBetweenActuators = inchesOffGroundR - inchesOffGroundL;
+			}
+		
+			if(Math.abs(deltaBetweenActuators) >= 0.25){//TODO: Make this 1/2 at competition
+				shutdownCounter +=1;
+			} else {
+				if(shutdownCounter > 0){
+					shutdownCounter -=1;
+				}
+			}
 
-		SmartDashboard.putNumber("TargetPos: ", targetPosition);
-		SmartDashboard.putNumber("DeltaR", deltaR);
-		SmartDashboard.putNumber("DeltaL", deltaL);
 		
-		if(rightSpeed > maxSpeed){
-			rightSpeed = maxSpeed;
-		} else if(rightSpeed < -maxSpeed){
-			rightSpeed = -maxSpeed;
-		} else if(rightSpeed > 0 && rightSpeed < minSpeed){
-			rightSpeed = minSpeed;
-		} else if(rightSpeed < 0 && rightSpeed > -minSpeed){
-			rightSpeed = -minSpeed;
-		}
+			SmartDashboard.putNumber("Difference between Actuators (in):", deltaBetweenActuators);
+			SmartDashboard.putNumber("Counter for shutdown mode", shutdownCounter);
 		
-		if(leftSpeed > maxSpeed){
-			leftSpeed = maxSpeed;
-		} else if(leftSpeed < -maxSpeed){
-			leftSpeed = -maxSpeed;
-		} else if(leftSpeed > 0 && leftSpeed < minSpeed){
-			leftSpeed = minSpeed;
-		} else if(leftSpeed < 0 && leftSpeed > -minSpeed){
-			leftSpeed = -minSpeed;
-		}
+			SmartDashboard.putNumber("Target Height: ", targetHeight);
+			SmartDashboard.putNumber("Target Right Pot: ", targetRightPosition);
+			SmartDashboard.putNumber("Target Left Pot: ", targetLeftPosition);
 		
-		SmartDashboard.putNumber("Right Speed: ", rightSpeed);
-		SmartDashboard.putNumber("Left Speed", leftSpeed);
+			deltaR = targetRightPosition - rightActuator.getAnalogInRaw();
+			deltaL = targetLeftPosition - leftActuator.getAnalogInRaw();
 		
+			
+			if(deltaBetweenActuators > 0.53){
+				errorCompensation = 0.2;
+			} else if(deltaBetweenActuators < -0.53){
+				errorCompensation = 1.8;
+			} else{
+				errorCompensation = 1 - (deltaBetweenActuators * 1.5);
+			}
+			
+			rightSpeed = modifierR * deltaR;
+			leftSpeed = modifierL * deltaL;
 		
-		if(Math.abs(targetPosition - getRightActuatorLength()) > 0.1){
-			rightActuator.set(rightSpeed);
+			maxSpeedL = maxSpeed * errorCompensation;
+			
+			if(rightSpeed > maxSpeedR){
+				rightSpeed = maxSpeedR;
+			} else if(rightSpeed < -maxSpeedR){
+				rightSpeed = -maxSpeedR;
+			} else if(rightSpeed > 0 && rightSpeed < minSpeedR){
+				rightSpeed = minSpeedR;
+			} else if(rightSpeed < 0 && rightSpeed > -minSpeedR){
+				rightSpeed = -minSpeedR;
+			}
+		
+			if(leftSpeed > maxSpeedL){
+				leftSpeed = maxSpeedL;
+			} else if(leftSpeed < -maxSpeedL){
+				leftSpeed = -maxSpeedL;
+			} else if(leftSpeed > 0 && leftSpeed < minSpeedL){
+				leftSpeed = minSpeedL;
+			} else if(leftSpeed < 0 && leftSpeed > -minSpeedL){
+				leftSpeed = -minSpeedL;
+			}
+		
+			SmartDashboard.putNumber("Right Speed: ", rightSpeed);
+			SmartDashboard.putNumber("Left Speed", leftSpeed);
+			
+			if(Math.abs(targetRightPosition - rightActuator.getAnalogInRaw()) > 4){
+				rightActuator.set(rightSpeed);
+			} else if(shutdownCounter > 50){
+				rightActuator.set(0);
+			} else {
+				rightActuator.set(0);
+			}
+			
+			if(Math.abs(targetLeftPosition - leftActuator.getAnalogInRaw()) > 4){
+				leftActuator.set(leftSpeed);
+			} else if(shutdownCounter > 50){
+				leftActuator.set(0);
+			} else{
+				leftActuator.set(0);
+			}
+			/*
+			deltaR = targetPosition - getRightActuatorLength();
+			deltaL = targetPosition - getLeftActuatorLength();
+			
+			rightSpeed = modifierR * inchesToPotR(deltaR);
+			leftSpeed = modifierL * inchesToPotL(deltaL);
+			
+	
+			SmartDashboard.putNumber("TargetPos: ", targetPosition);
+			SmartDashboard.putNumber("DeltaR", deltaR);
+			SmartDashboard.putNumber("DeltaL", deltaL);
+			
+			if(rightSpeed > maxSpeed){
+				rightSpeed = maxSpeed;
+			} else if(rightSpeed < -maxSpeed){
+				rightSpeed = -maxSpeed;
+			} else if(rightSpeed > 0 && rightSpeed < minSpeed){
+				rightSpeed = minSpeed;
+			} else if(rightSpeed < 0 && rightSpeed > -minSpeed){
+				rightSpeed = -minSpeed;
+			}
+			
+			if(leftSpeed > maxSpeed){
+				leftSpeed = maxSpeed;
+			} else if(leftSpeed < -maxSpeed){
+				leftSpeed = -maxSpeed;
+			} else if(leftSpeed > 0 && leftSpeed < minSpeed){
+				leftSpeed = minSpeed;
+			} else if(leftSpeed < 0 && leftSpeed > -minSpeed){
+				leftSpeed = -minSpeed;
+			}
+			
+			SmartDashboard.putNumber("Right Speed: ", rightSpeed);
+			SmartDashboard.putNumber("Left Speed", leftSpeed);
+			
+			
+			if(Math.abs(targetPosition - getRightActuatorLength()) > 0.1){
+				rightActuator.set(rightSpeed);
+			} else {
+				rightActuator.set(0);
+			}
+			if(Math.abs(targetPosition - getLeftActuatorLength()) > 0.1){
+				leftActuator.set(leftSpeed);
+			} else {
+				leftActuator.set(0);
+			}
+			*/
 		} else {
+			//Error counter is Above 50, shutdown lifter
+			leftActuator.set(0);
 			rightActuator.set(0);
 		}
-		if(Math.abs(targetPosition - getLeftActuatorLength()) > 0.1){
-			leftActuator.set(leftSpeed);
-		} else {
-			leftActuator.set(0);
-		}
-		
 	}
 }
