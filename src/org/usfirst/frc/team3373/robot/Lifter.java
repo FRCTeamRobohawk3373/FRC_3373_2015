@@ -100,10 +100,10 @@ public class Lifter {
 	//Calibration relating height of hook off ground to pot values on each arm
 	
 	double[] heightOffGround = {2,3,4,5,6,7,8,9,10,11};//In inches
-	double[] heightOffGroundL = {1.96875, 2.875, 4.15625, 5.03125, 5.96875, 7.0625, 8.125, 9.09375, 9.9375, 11.0625};
-	double[] heightOffGroundR = {2.1875, 3, 4.0626, 4.96875, 6.09375, 7.1875, 8.25, 9.0625, 9.9375, 11.0125};
-	double[] rightPot = {180, 241, 324, 392, 478, 561,  642, 707, 772, 866};//relates the pot of the right Actuator
-	double[] leftPot = {162, 230, 330, 396, 468, 549, 633, 708, 774, 860};//relates the pot of the left Actuator
+	double[] heightOffGroundL = {1.96875, 2.875, 4.15625, 5.03125, 5.96875, 7.0625, 8.125, 9.09375, 9.9375, 11.0625};//TODO Calibrate
+	double[] heightOffGroundR = {2.1875, 3, 4.0626, 4.96875, 6.09375, 7.1875, 8.25, 9.0625, 9.9375, 11.0125};//TODO Calibrate
+	double[] rightPot = {180, 241, 324, 392, 478, 561,  642, 707, 772, 866};//relates the pot of the right Actuator TODO Calibrate
+	double[] leftPot = {162, 230, 330, 396, 468, 549, 633, 708, 774, 860};//relates the pot of the left Actuator TODO Calibrate
 	
 	
 	
@@ -524,10 +524,12 @@ public class Lifter {
 		}
 	}
 	public void relativeChangeTargetHeight(double heightDeltaInInches){
-		double newHeight;
-		newHeight = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
-		newHeight += heightDeltaInInches;
-		targetHeight = newHeight;
+		//double newHeight;
+		//newHeight = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
+		//newHeight += heightDeltaInInches;
+		//targetHeight = newHeight;
+		
+		targetHeight += heightDeltaInInches;
 		//Checking boundaries
 		if(targetHeight > heightOffGroundL[heightOffGroundL.length - 1]){
 			targetHeight = heightOffGroundL[heightOffGroundL.length - 1];
@@ -746,6 +748,15 @@ public class Lifter {
 	public void manualStop(){
 		leftActuator.set(0);
 		rightActuator.set(0);
+	}
+	/**
+	 * Get current height of hook off the ground
+	 * @return value returned is in inches
+	 */
+	public double getCurrentHeight(){
+		double height;
+		height = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
+		return height;
 	}
 	
 }

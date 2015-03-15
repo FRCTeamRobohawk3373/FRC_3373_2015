@@ -5,19 +5,26 @@ import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Indexer {
+	
+	Timer armTimer = new Timer();
 	
 	private RobotDrive indexer;
 	private CANTalon armMotor;
 	private double max;
 	private double min;
-	private double maxOutput = 0.25;
+	private double maxOutput = 0.25;//TODO CALIBRATE
 	private double output = maxOutput;
 	private double current;
-	private double maxCurrent = 0.3;
-	private double minCurrent = 0.15;
+	private double maxCurrent = 0.3; //TODO CALIBRATE
+	private double minCurrent = 0.15;//TODO CALIBRATE
+	
+	public boolean isHookArmCollisionPossible;
+	private boolean isFirstIteration = true;
+	private double timeToAvoidCollision = 2;//TODO CALIBRATE
 	
 	/**
 	 * Initializes an indexer object. 
@@ -35,13 +42,19 @@ public class Indexer {
 		armMotor.changeControlMode(CANTalon.ControlMode.PercentVbus);
 		armMotor.enableBrakeMode(true);
 		armMotor.enableLimitSwitch(false, false);
+		
+		//armTimer.start(); used for collision prevention, that didn't work
 	}
 	
 	public void wheelControl(double leftY, double rightY){
 		indexer.tankDrive(leftY, rightY);
 	}
-	
+	/**
+	 * Controls the opening and closing of arms on the robot
+	 * @param LX
+	 */
 	public void controlArms(double LX){
+		
 		current = armMotor.getOutputCurrent();
 		if(current > maxCurrent){
 			output = 0.1;
@@ -59,12 +72,26 @@ public class Indexer {
 		SmartDashboard.putNumber("Left Axis: ", LX);
 		if(LX > 0.1){
 			armMotor.set(-output);
+			isHookArmCollisionPossible = true;
 		} else if(LX < -0.1) {
 			armMotor.set(output);
 		} else{
 			armMotor.set(0);
 		}
 	}
+	
+	//Test code TODO Take this method out
+	/*
+	public void controlArms(double x){
+		if(x>0){
+			indexer.tankDrive(1, 1);
+		} else{
+			indexer.tankDrive(0, 0);
+		}
+	}*/
+	
+	
+
 	
 	public boolean isHolding(){
 		if(output < (maxOutput)){
@@ -73,7 +100,30 @@ public class Indexer {
 			return false;
 		}
 	}
-	
+	/*This was an attempt avoid collisions between arms and lifter, doesn't work currently
+	public void avoidCollision(boolean collisionPossible){
+		double startTime = 0;
+		double currentTime;
+		if(collisionPossible){
+			currentTime = armTimer.get();
+			if(isFirstIteration == true){
+				startTime = armTimer.get();
+				isFirstIteration = false;
+				System.out.println("First Iteration");
+			}
+			if(isFirstIteration == false && ((currentTime-startTime) < timeToAvoidCollision)){
+				controlArms(1);
+				System.out.println("Opening");
+			} else{
+				controlArms(0);
+				isHookArmCollisionPossible = false;
+				isFirstIteration = true;
+				System.out.println("Stop");
+			}
+		} else {
+			//do nothing
+		}
+	}*/
 
 	/*
 	public void controlMotors(double LX, double RX){

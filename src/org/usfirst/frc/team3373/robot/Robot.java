@@ -88,13 +88,14 @@ public class Robot extends SampleRobot {
 
     boolean haveRun;
         
-    double robotWidth = 20.5;
-    double robotLength = 33.5;
+    double robotWidth = 20.5;//TODO CALIBRATE check
+    double robotLength = 33.5;//TODO CALIBRATE check
     double rotateRadius = 0.;
     double objectDistance = 60.;
     double stackDistance = 45.;
     
-    boolean ismanualLifterMode = false;
+    boolean ismanualLifterMode = true;
+    boolean isCollisionPossible = false;
     
     
     public Robot() {
@@ -145,7 +146,7 @@ public class Robot extends SampleRobot {
      * Drive left & right motors for 2 seconds then stop
      */
     public void autonomous() {
-    	/*
+    	/* TODO CALIBRATE TEST 16 SWITCH
     	int index = 17;//for testing purposes
     	if(ones.get()){
     		index += 1;
@@ -284,13 +285,31 @@ public class Robot extends SampleRobot {
     		indexer.wheelControl(shooter.getRawAxis(LY), shooter.getRawAxis(RY));
     		indexer.controlArms(shooter.getRawAxis(LX));//TODO: need to add control to RX also
     		
+    		/* This was an attempt avoid collisions between arms and lifter, doesn't work currently
+    		if(shooter.isStartPushed()){//TODO Take this if statement out
+    			indexer.isHookArmCollisionPossible = true;
+    		}
+    		
+    		if(indexer.isHookArmCollisionPossible){//AND height is in conflict zone AND hook is moving
+    			isCollisionPossible = true;
+    		} else{
+    			isCollisionPossible = false;
+    		}
+    		indexer.avoidCollision(isCollisionPossible);
+    		*/
     		
     		//lifter control
     		if(shooter.isLBPushed()){
-    			lifter.relativeChangeTargetHeight(-1);
+    			if(ismanualLifterMode){
+    				lifter.changeTargetHeight(lifter.getCurrentHeight());
+    			}
+    			lifter.relativeChangeTargetHeight(-1);//TODO CALIBRATE
     			ismanualLifterMode = false;
     		} else if(shooter.isRBPushed()){
-    			lifter.relativeChangeTargetHeight(1);
+    			if(ismanualLifterMode){
+    				lifter.changeTargetHeight(lifter.getCurrentHeight());
+    			}
+    			lifter.relativeChangeTargetHeight(1);//TODO CALIBRATE
     			ismanualLifterMode = false;
     		}
     		//Manual lifter control
@@ -326,7 +345,10 @@ public class Robot extends SampleRobot {
     			ismanualLifterMode = false;
     		} else if(driver.isYPushed() || shooter.isYPushed()){
     			//unhook stack
-    			lifter.relativeChangeTargetHeight(1.5);
+    			if(ismanualLifterMode){
+    				lifter.changeTargetHeight(lifter.getCurrentHeight());
+    			}
+    			lifter.relativeChangeTargetHeight(-1.5);
     			ismanualLifterMode = false;
     		}
     		//flip tote and right can
@@ -360,7 +382,7 @@ public class Robot extends SampleRobot {
     		
     		//swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
 
-    		
+    		/* TODO put this in the switch case statement
     		if(driver.isAPushed()){
     			lifter.changeTargetHeight(2.5);
     		} else if(driver.isBPushed()){
@@ -375,7 +397,7 @@ public class Robot extends SampleRobot {
     		
     		if(driver.isLBHeld()){
     			lifter.shutdownCounter = 0;
-    		}
+    		}*/
     		
     		/*
 			if (driver.isAHeld()){
@@ -391,7 +413,7 @@ public class Robot extends SampleRobot {
             }*/
     		
     		
-    		/*
+    		/*TODO CALIBRATE TEST 16 SWITCH
     		index = 0;
         	if(ones.get()){
         		index += 1;
