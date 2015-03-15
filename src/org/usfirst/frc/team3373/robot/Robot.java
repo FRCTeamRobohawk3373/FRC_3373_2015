@@ -236,18 +236,21 @@ public class Robot extends SampleRobot {
     		} else{
     			swerve.setSpeedMode("normal");
     		} 
-    		/*
+    		
             if(driver.isLStickPushed()){
             	swerve.switchToFieldCentric();
             }
             if(driver.getRawAxis(Rtrigger) > 0.2){
             	swerve.switchToObjectCentric();
             }
+            if(driver.getRawAxis(Ltrigger) > 0.2){
+            	swerve.switchToHookCentric();
+            }
             if(driver.isRStickPushed()){
             	swerve.switchToRobotCentric();
-            }*/
+            }
     		
-    		swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), -driver.getRawAxis(RX));
+    		swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
     		
     		
     		

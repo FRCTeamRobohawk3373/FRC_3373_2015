@@ -48,6 +48,7 @@ public class SwerveControl  {
     boolean isRobotCentric = true;
     boolean isFieldCentric = false;
     boolean isObjectCentric = false;
+    boolean isHookCentric = false;
     
     double radius = 40;
     
@@ -252,8 +253,10 @@ public class SwerveControl  {
     public void move(double LY, double LX, double RX){
     	if(isFieldCentric || isRobotCentric){
     		calculateSwerveControl(LY, LX, RX);
-    	} else {
+    	} else if(isObjectCentric){
     		calculateObjectControl(RX);
+    	} else{
+    		calculateHookControl(RX);
     	}
     }
     
@@ -398,6 +401,36 @@ public class SwerveControl  {
     public void calculateObjectControl(double RX){
     	double distanceToFront = radius - robotLength/2;
     	double distanceToBack = radius + robotLength/2;
+    	
+    	FLWheel.setTargetAngle(180 - Math.toDegrees(Math.atan2(robotWidth/2, distanceToFront)));
+    	FRWheel.setTargetAngle(180 + Math.toDegrees(Math.atan2(robotWidth/2, distanceToFront)));
+    	BLWheel.setTargetAngle(180 - Math.toDegrees(Math.atan2(robotWidth/2, distanceToBack)));
+    	BRWheel.setTargetAngle(180 + Math.toDegrees(Math.atan2(robotWidth/2, distanceToBack)));
+    	
+    	BLWheel.setSpeed(RX);
+    	BRWheel.setSpeed(RX);
+    	
+    	double speedRatio = Math.sqrt(Math.pow((robotWidth/2), 2) + Math.pow(distanceToFront, 2)) / Math.sqrt(Math.pow((robotWidth/2), 2) + Math.pow(distanceToBack, 2));
+    	
+    	FLWheel.setSpeed(speedRatio * RX);
+    	FRWheel.setSpeed(speedRatio * RX);
+    	
+    	FRWheel.goToAngle();
+    	FLWheel.goToAngle();
+    	BRWheel.goToAngle();
+    	BLWheel.goToAngle();
+    	
+    	FRWheel.drive();
+    	FLWheel.drive();
+    	BRWheel.drive();
+    	BLWheel.drive();
+    	
+    }
+    
+    
+    public void calculateHookControl(double RX){
+    	double distanceToFront = 38 - robotLength/2;
+    	double distanceToBack = 38 + robotLength/2;
     	
     	FLWheel.setTargetAngle(180 - Math.toDegrees(Math.atan2(robotWidth/2, distanceToFront)));
     	FRWheel.setTargetAngle(180 + Math.toDegrees(Math.atan2(robotWidth/2, distanceToFront)));
@@ -575,6 +608,7 @@ public class SwerveControl  {
 		isObjectCentric = false;
 		isRobotCentric = false;
 		isFieldCentric = true;
+		isHookCentric = false;
     }
     
     /**
@@ -585,6 +619,16 @@ public class SwerveControl  {
 		isObjectCentric = true;
 		isFieldCentric = false;
 		isRobotCentric = false;
+		isHookCentric = false;
+    }
+   /**
+    * Called to switch to HookCentric 
+    */
+    public void switchToHookCentric(){
+		isObjectCentric = false;
+		isFieldCentric = false;
+		isRobotCentric = false;
+		isHookCentric = true;
     }
     
     /**
@@ -595,6 +639,7 @@ public class SwerveControl  {
 		isObjectCentric = false;
 		isFieldCentric = false;
 		isRobotCentric = true;
+		isHookCentric = false;
     }
     
     /*
