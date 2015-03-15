@@ -659,4 +659,75 @@ public class Lifter {
 			rightActuator.set(0);
 		}
 	}
+	
+	public void manualUp(double trigger){
+		if(trigger < 0.2) trigger = 0;
+		
+
+		inchesOffGroundL = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
+		inchesOffGroundR = lookupTable.lookUpValue(rightActuator.getAnalogInRaw(), rightPot, heightOffGroundR);
+		
+		if((shutdownCounter > 5) || (inchesOffGroundL >= heightOffGroundL[heightOffGroundL.length - 1]) || (inchesOffGroundR >= heightOffGroundR[heightOffGroundR.length - 1])){
+			leftActuator.set(0);
+			rightActuator.set(0);
+			return;
+		} else {
+			
+			deltaBetweenActuators = inchesOffGroundL - inchesOffGroundR;
+			
+			if(deltaBetweenActuators > 0.53){
+				errorCompensation = 0.2;
+			} else if(deltaBetweenActuators < -0.53){
+				errorCompensation = 1.8;
+			} else{
+				errorCompensation = 1 - (deltaBetweenActuators * 1.5);
+			}
+			
+			leftSpeed = errorCompensation * trigger * maxSpeed;
+			rightSpeed = trigger * maxSpeed;
+			
+			leftActuator.set(leftSpeed);
+			rightActuator.set(rightSpeed);
+		}
+		
+	}
+	
+	public void manualDown(double trigger){
+		if(trigger < 0.2){
+			trigger = 0;
+		} else {
+			trigger = -trigger;
+		}
+
+		inchesOffGroundL = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
+		inchesOffGroundR = lookupTable.lookUpValue(rightActuator.getAnalogInRaw(), rightPot, heightOffGroundR);
+		
+		if(shutdownCounter > 5|| (inchesOffGroundL <= heightOffGroundL[0]) || (inchesOffGroundR <= heightOffGroundR[0])){
+			leftActuator.set(0);
+			rightActuator.set(0);
+			return;
+		} else {
+			
+			deltaBetweenActuators = inchesOffGroundR - inchesOffGroundL;
+			
+			if(deltaBetweenActuators > 0.53){
+				errorCompensation = 0.2;
+			} else if(deltaBetweenActuators < -0.53){
+				errorCompensation = 1.8;
+			} else{
+				errorCompensation = 1 - (deltaBetweenActuators * 1.5);
+			}
+			
+			leftSpeed = errorCompensation * trigger * maxSpeed;
+			rightSpeed = trigger * maxSpeed;
+			
+			leftActuator.set(leftSpeed);
+			rightActuator.set(rightSpeed);
+		}
+	}
+	public void manualStop(){
+		leftActuator.set(0);
+		rightActuator.set(0);
+	}
+	
 }

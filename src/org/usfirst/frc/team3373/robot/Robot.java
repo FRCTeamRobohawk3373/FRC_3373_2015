@@ -94,6 +94,9 @@ public class Robot extends SampleRobot {
     double objectDistance = 60.;
     double stackDistance = 45.;
     
+    boolean ismanualLifterMode = false;
+    
+    
     public Robot() {
     	//Initialize controllers
         driver = new SuperJoystick(0);
@@ -132,7 +135,7 @@ public class Robot extends SampleRobot {
     		byte update_rate_hz = 50;
     		//imu = new IMU(serial_port,update_rate_hz);
     		imu = new IMUAdvanced(serial_port,update_rate_hz);
-        	} catch( Exception ex ) {
+        	} catch(Exception ex) {
         		
         	}
         first_iteration = true;
@@ -289,12 +292,19 @@ public class Robot extends SampleRobot {
     			//down target by one tote
     		}
     		//Manual lifter control
-    		if(shooter.getRawAxis(Ltrigger) > 0.3){
-    			lifter.absoluteLower();
-    		} else if(shooter.getRawAxis(Rtrigger) > 0.3){
-    			lifter.absoluteRaise();
+    		
+    		if((shooter.getRawAxis(Rtrigger) > 0.2) && (shooter.getRawAxis(Ltrigger) > 0.2)){
+    			ismanualLifterMode = true;
+    			lifter.manualStop();
+    		} else if(shooter.getRawAxis(Ltrigger) > 0.2){
+    			ismanualLifterMode = true;
+    			lifter.manualDown(shooter.getRawAxis(Ltrigger));
+    		} else if(shooter.getRawAxis(Rtrigger) > 0.2){
+    			ismanualLifterMode = true;
+    			lifter.manualUp(shooter.getRawAxis(Rtrigger));
     		} else{
-    			lifter.absoluteStop();
+    			ismanualLifterMode = true;
+    			lifter.manualStop();
     		}
     		
     		/*******************
@@ -318,7 +328,9 @@ public class Robot extends SampleRobot {
     			//flip tote
     		}
     		
-    		
+    		if(ismanualLifterMode = false){
+        		lifter.goToHeightOffGround();
+    		}
     		
     		Timer.delay(0.005);
     		driver.clearButtons();

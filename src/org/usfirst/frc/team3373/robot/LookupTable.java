@@ -7,6 +7,8 @@ import java.util.Hashtable;
  * @author Jamie
  */
 public class LookupTable {
+	
+
 
     public double lookUpValue(double currentValue, double[] independentArray, double[] dependentArray){ //independentArray is an array that corresponds to distance from the target from the wall and dependentArray is the values corresponding to the distance in the independentArray
         int i;
@@ -25,8 +27,8 @@ public class LookupTable {
                 }
             }
         } else {
-            return 0;//if we are out of range don't do anything!
+            return dependentArray[dependentArray.length - 1];//if we are out of range return max value!
         }
-        return 0;//we should never get here
+        return dependentArray[0];//we should get here when the "currentValue" is below the first entry on "independentArray"
     }
 }
