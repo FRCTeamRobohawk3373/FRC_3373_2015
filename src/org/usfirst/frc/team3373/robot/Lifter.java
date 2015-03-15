@@ -516,6 +516,24 @@ public class Lifter {
 	}
 	public void changeTargetHeight(double heightOfHookOffGroundInInches){
 		targetHeight = heightOfHookOffGroundInInches;
+		//Checking boundaries
+		if(targetHeight > heightOffGroundL[heightOffGroundL.length - 1]){
+			targetHeight = heightOffGroundL[heightOffGroundL.length - 1];
+		} else if(targetHeight < heightOffGroundL[0]){
+			targetHeight = heightOffGroundL[0];
+		}
+	}
+	public void relativeChangeTargetHeight(double heightDeltaInInches){
+		double newHeight;
+		newHeight = lookupTable.lookUpValue(leftActuator.getAnalogInRaw(), leftPot, heightOffGroundL);
+		newHeight += heightDeltaInInches;
+		targetHeight = newHeight;
+		//Checking boundaries
+		if(targetHeight > heightOffGroundL[heightOffGroundL.length - 1]){
+			targetHeight = heightOffGroundL[heightOffGroundL.length - 1];
+		} else if(targetHeight < heightOffGroundL[0]){
+			targetHeight = heightOffGroundL[0];
+		}
 	}
 	
 	public void goToHeightOffGround(){

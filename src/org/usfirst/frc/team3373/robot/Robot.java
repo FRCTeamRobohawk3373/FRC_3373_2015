@@ -287,9 +287,11 @@ public class Robot extends SampleRobot {
     		
     		//lifter control
     		if(shooter.isLBPushed()){
-    			//up target by one tote
+    			lifter.relativeChangeTargetHeight(-1);
+    			ismanualLifterMode = false;
     		} else if(shooter.isRBPushed()){
-    			//down target by one tote
+    			lifter.relativeChangeTargetHeight(1);
+    			ismanualLifterMode = false;
     		}
     		//Manual lifter control
     		
@@ -302,8 +304,7 @@ public class Robot extends SampleRobot {
     		} else if(shooter.getRawAxis(Rtrigger) > 0.2){
     			ismanualLifterMode = true;
     			lifter.manualUp(shooter.getRawAxis(Rtrigger));
-    		} else{
-    			ismanualLifterMode = true;
+    		} else if(ismanualLifterMode){
     			lifter.manualStop();
     		}
     		
@@ -313,12 +314,20 @@ public class Robot extends SampleRobot {
     		
     		if(driver.isAPushed() || shooter.isAPushed()){
     			//Lower lifter to the ground
+    			lifter.changeTargetHeight(3);//TODO: CALIBRATE
+    			ismanualLifterMode = false;
     		} else if(driver.isBPushed() || shooter.isBPushed()){
     			//move lifter to transport height ~4 in off ground
+    			lifter.changeTargetHeight(5);//TODO: CALIBRATE
+    			ismanualLifterMode = false;
     		} else if(driver.isXPushed() || shooter.isXPushed()){
     			//move lifter to can-pickup height
+    			lifter.changeTargetHeight(7);//TODO: CALIBRATE
+    			ismanualLifterMode = false;
     		} else if(driver.isYPushed() || shooter.isYPushed()){
     			//unhook stack
+    			lifter.relativeChangeTargetHeight(1.5);
+    			ismanualLifterMode = false;
     		}
     		//flip tote and right can
     		
@@ -328,7 +337,7 @@ public class Robot extends SampleRobot {
     			//flip tote
     		}
     		
-    		if(ismanualLifterMode = false){
+    		if(ismanualLifterMode == false){
         		lifter.goToHeightOffGround();
     		}
     		
