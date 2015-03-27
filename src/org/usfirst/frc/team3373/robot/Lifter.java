@@ -83,7 +83,7 @@ public class Lifter {
 	double modifierL = 1;
 	double rightSpeed;
 	double leftSpeed;
-	double maxSpeed = 100;
+	double maxSpeed = 60;
 	double minSpeed = 20;
 	double maxSpeedR = maxSpeed;//In pot units per 10 milliseconds
 	double minSpeedR = minSpeed;
@@ -94,16 +94,19 @@ public class Lifter {
 	double inchesOffGroundL;
 	double deltaBetweenActuators;
 	double errorCompensation;//this will be applied to maxSpeed L
+	double errorCompensationConstant = .3;
 	
 	int shutdownCounter;
 	
 	//Calibration relating height of hook off ground to pot values on each arm
 	
 	double[] heightOffGround = {2,3,4,5,6,7,8,9,10,11};//In inches
-	double[] heightOffGroundL = {1.96875, 2.875, 4.15625, 5.03125, 5.96875, 7.0625, 8.125, 9.09375, 9.9375, 11.0625};//TODO Calibrate
-	double[] heightOffGroundR = {2.1875, 3, 4.0626, 4.96875, 6.09375, 7.1875, 8.25, 9.0625, 9.9375, 11.0125};//TODO Calibrate
-	double[] rightPot = {180, 241, 324, 392, 478, 561,  642, 707, 772, 866};//relates the pot of the right Actuator TODO Calibrate
-	double[] leftPot = {162, 230, 330, 396, 468, 549, 633, 708, 774, 860};//relates the pot of the left Actuator TODO Calibrate
+	//double[] heightOffGroundL = {1.96875, 2.875, 4.15625, 5.03125, 5.96875, 7.0625, 8.125, 9.09375, 9.9375, 11.0625};//TODO Calibrate
+	double[] heightOffGroundL = {0, 5.5, 11.8125, 17.625, 24.125, 29.5625, 36.0625, 41.5, 48.4375, 54.5};
+	double[] heightOffGroundR = {0, 5.5, 11.8125, 17.625, 24.125, 29.5625, 36.0625, 41.5, 48.4375, 54.5};
+	//double[] heightOffGroundR = {2.1875, 3, 4.0626, 4.96875, 6.09375, 7.1875, 8.25, 9.0625, 9.9375, 11.0125};//TODO Calibrate
+	double[] rightPot = {175, 270, 367, 454, 546, 622, 707, 777, 863, 937};//relates the pot of the right Actuator TODO Calibrate
+	double[] leftPot = {176, 269, 368, 456, 550, 626, 713, 783, 869, 944};//relates the pot of the left Actuator TODO Calibrate
 	
 	
 	
@@ -555,7 +558,7 @@ public class Lifter {
 				deltaBetweenActuators = inchesOffGroundR - inchesOffGroundL;
 			}
 		
-			if(Math.abs(deltaBetweenActuators) >= 0.25){//TODO: Make this 1/2 at competition
+			if(Math.abs(deltaBetweenActuators) >= 0.5){//TODO: Make this 1/2 at competition
 				shutdownCounter +=1;
 			} else {
 				if(shutdownCounter > 0){
@@ -580,7 +583,7 @@ public class Lifter {
 			} else if(deltaBetweenActuators < -0.53){
 				errorCompensation = 1.8;
 			} else{
-				errorCompensation = 1 - (deltaBetweenActuators * 1.5);
+				errorCompensation = 1 - (deltaBetweenActuators * errorCompensationConstant);
 			}
 			
 			rightSpeed = modifierR * deltaR;
@@ -700,7 +703,7 @@ public class Lifter {
 			} else if(deltaBetweenActuators < -0.53){
 				errorCompensation = 1.8;
 			} else{
-				errorCompensation = 1 - (deltaBetweenActuators * 1.5);
+				errorCompensation = 1 - (deltaBetweenActuators * errorCompensationConstant);
 			}
 			
 			leftSpeed = errorCompensation * trigger * maxSpeed;
@@ -735,7 +738,7 @@ public class Lifter {
 			} else if(deltaBetweenActuators < -0.53){
 				errorCompensation = 1.8;
 			} else{
-				errorCompensation = 1 - (deltaBetweenActuators * 1.5);
+				errorCompensation = 1 - (deltaBetweenActuators * errorCompensationConstant);
 			}
 			
 			leftSpeed = errorCompensation * trigger * maxSpeed;

@@ -16,10 +16,10 @@ public class Indexer {
 	private CANTalon armMotor;
 	private double max;
 	private double min;
-	private double maxOutput = 0.25;//TODO CALIBRATE
+	private double maxOutput = 0.4;//TODO CALIBRATE
 	private double output = maxOutput;
 	private double current;
-	private double maxCurrent = 0.3; //TODO CALIBRATE
+	private double maxCurrent = 1.0; //TODO CALIBRATE
 	private double minCurrent = 0.15;//TODO CALIBRATE
 	
 	public boolean isHookArmCollisionPossible;
@@ -47,6 +47,20 @@ public class Indexer {
 	}
 	
 	public void wheelControl(double leftY, double rightY){
+		if(leftY > 0.1){
+			leftY = 1;
+		} else if(leftY < -0.1){
+			leftY = -1;
+		} else{
+			leftY = 0;
+		}
+		if(rightY > 0.1){
+			rightY = 1;
+		} else if(rightY < -0.1){
+			rightY = -1;
+		} else{
+			rightY = 0;
+		}
 		indexer.tankDrive(leftY, rightY);
 	}
 	/**

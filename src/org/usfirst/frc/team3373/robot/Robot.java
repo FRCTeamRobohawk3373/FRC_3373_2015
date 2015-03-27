@@ -88,7 +88,7 @@ public class Robot extends SampleRobot {
 
     boolean haveRun;
         
-    double robotWidth = 20.5;//TODO CALIBRATE check
+    double robotWidth = 21.125;//TODO CALIBRATE check
     double robotLength = 33.5;//TODO CALIBRATE check
     double rotateRadius = 0.;
     double objectDistance = 60.;
@@ -103,7 +103,7 @@ public class Robot extends SampleRobot {
         driver = new SuperJoystick(0);
         shooter = new SuperJoystick(1);
         //Initialize robot sub-systems
-        lifter = new Lifter(4, 5);
+        lifter = new Lifter(5, 4);
         indexer = new Indexer(4, 5, 6);
         swerve = new SwerveControl(frontLeftDrive, frontLeftRotate, frontRightDrive, 
         		frontRightRotate, backLeftDrive, backLeftRotate, backRightDrive, 
@@ -146,8 +146,8 @@ public class Robot extends SampleRobot {
      * Drive left & right motors for 2 seconds then stop
      */
     public void autonomous() {
-    	/* TODO CALIBRATE TEST 16 SWITCH
-    	int index = 17;//for testing purposes
+    	// TODO CALIBRATE TEST 16 SWITCH
+    	int index = 0;//for testing purposes
     	if(ones.get()){
     		index += 1;
     	}
@@ -162,13 +162,69 @@ public class Robot extends SampleRobot {
     	}
     	System.out.println(index);
     	switch(index){
-    		case 0:
+    		case 0://Simply drive into auto zone
+    			indexer.controlArms(-1);
+    			try{
+    				Thread.sleep(1000);
+    			} catch(Exception e){
+    				//do nothing
+    			}
+    			lifter.manualUp(1);
+    			try{
+    				Thread.sleep(500);
+    			} catch(Exception e){
+    				//do nothing
+    			}
+    			lifter.manualStop();
+    			swerve.relativeMoveRobot(90, 1, 3);
     			break;
-    		case 1:
+    		case 1://Start behind items and drive forward, hopefully bringing can and tote to the middle
+    			indexer.controlArms(-1);
+    			try{
+    				Thread.sleep(1000);
+    			} catch(Exception e){
+    				//do nothing
+    			}
+    			swerve.calculateSwerveControl(1, 0, 0);
+    			indexer.wheelControl(-1, -1);
+    			try{
+    				Thread.sleep(3500);
+    			} catch (Exception x){
+    				//Do nothing
+    			}
+    			swerve.calculateSwerveControl(0, 0, 0);
+    			indexer.wheelControl(0, 0);
     			break;
     		case 2:
+    			indexer.controlArms(-1);
+    			try{
+    				Thread.sleep(1000);
+    			} catch(Exception e){
+    				//Do nothing
+    			}
+    			lifter.changeTargetHeight(27);
+    			while(lifter.getCurrentHeight() <= 26.5){
+    				lifter.goToHeightOffGround();
+    			}
+    			lifter.manualStop();
+    			swerve.relativeMoveRobot(270, 1, 4);
     			break;
     		case 3:
+    			indexer.controlArms(-1);
+    			try{
+    				Thread.sleep(1000);
+    			} catch(Exception e){
+    				//do nothing
+    			}
+    			lifter.manualUp(1);
+    			try{
+    				Thread.sleep(500);
+    			} catch(Exception e){
+    				//do nothing
+    			}
+    			lifter.manualStop();
+    			swerve.relativeMoveRobot(90, 0, 1);
+    			swerve.relativeMoveRobot(90, 1, 3);
     			break;
     		case 4:
     			break;
@@ -193,11 +249,11 @@ public class Robot extends SampleRobot {
     		case 14:
     			break;
     		case 15:
-    			swerve.wheelsToZero();
+    			//swerve.wheelsToZero();
     			break;
     		default:
-    			swerve.relativeRotateRobot(60);
-    	}*/
+    			//swerve.relativeRotateRobot(60);
+    	}
     	
     	
     	/*swerve.relativeMoveRobot(270, 0.3, 2);
@@ -234,11 +290,14 @@ public class Robot extends SampleRobot {
     		
     		//Driving
     		if(driver.isLBHeld()){
-    			swerve.setSpeedMode("turbo");
+    			//Turbo Mode
+    			swerve.setSpeedMode(.5);
     		} else if(driver.isRBHeld()){
-    			swerve.setSpeedMode("sniper");
+    			//Sniper Mode
+    			swerve.setSpeedMode(0.20);
     		} else{
-    			swerve.setSpeedMode("normal");
+    			//Regular mode
+    			swerve.setSpeedMode(0.3);
     		} 
     		
             if(driver.isLStickPushed()){
@@ -254,7 +313,7 @@ public class Robot extends SampleRobot {
             	swerve.switchToRobotCentric();
             }
     		
-    		swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+    		swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
     		
     		
     		
@@ -303,13 +362,13 @@ public class Robot extends SampleRobot {
     			if(ismanualLifterMode){
     				lifter.changeTargetHeight(lifter.getCurrentHeight());
     			}
-    			lifter.relativeChangeTargetHeight(-1);//TODO CALIBRATE
+    			lifter.relativeChangeTargetHeight(-12);//TODO CALIBRATE
     			ismanualLifterMode = false;
     		} else if(shooter.isRBPushed()){
     			if(ismanualLifterMode){
     				lifter.changeTargetHeight(lifter.getCurrentHeight());
     			}
-    			lifter.relativeChangeTargetHeight(1);//TODO CALIBRATE
+    			lifter.relativeChangeTargetHeight(12);//TODO CALIBRATE
     			ismanualLifterMode = false;
     		}
     		//Manual lifter control
@@ -333,11 +392,11 @@ public class Robot extends SampleRobot {
     		
     		if(driver.isAPushed() || shooter.isAPushed()){
     			//Lower lifter to the ground
-    			lifter.changeTargetHeight(3);//TODO: CALIBRATE
+    			lifter.changeTargetHeight(0);//TODO: CALIBRATE
     			ismanualLifterMode = false;
     		} else if(driver.isBPushed() || shooter.isBPushed()){
     			//move lifter to transport height ~4 in off ground
-    			lifter.changeTargetHeight(5);//TODO: CALIBRATE
+    			lifter.changeTargetHeight(4);//TODO: CALIBRATE
     			ismanualLifterMode = false;
     		} else if(driver.isXPushed() || shooter.isXPushed()){
     			//move lifter to can-pickup height
@@ -378,7 +437,20 @@ public class Robot extends SampleRobot {
     	}
     	while (isTest() && isEnabled()){
         	
-    		
+    		if((shooter.getRawAxis(Rtrigger) > 0.2) && (shooter.getRawAxis(Ltrigger) > 0.2)){
+    			ismanualLifterMode = true;
+    			lifter.manualStop();
+    		} else if(shooter.getRawAxis(Ltrigger) > 0.2){
+    			ismanualLifterMode = true;
+    			lifter.manualDown(shooter.getRawAxis(Ltrigger));
+    		} else if(shooter.getRawAxis(Rtrigger) > 0.2){
+    			ismanualLifterMode = true;
+    			lifter.manualUp(shooter.getRawAxis(Rtrigger));
+    		} else if(ismanualLifterMode){
+    			lifter.manualStop();
+    		}
+    		indexer.wheelControl(shooter.getRawAxis(LY), shooter.getRawAxis(RY));
+    		indexer.controlArms(shooter.getRawAxis(LX));
     		
     		//swerve.move(driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
 
@@ -397,7 +469,9 @@ public class Robot extends SampleRobot {
     		
     		if(driver.isLBHeld()){
     			lifter.shutdownCounter = 0;
-    		}*/
+    		}
+    		*/
+    		
     		
     		/*
 			if (driver.isAHeld()){
@@ -411,6 +485,8 @@ public class Robot extends SampleRobot {
             } else {
             	lifter.absoluteStop();
             }*/
+			
+			SmartDashboard.putNumber("Lifter Height", lifter.getCurrentHeight());
     		
     		
     		/*TODO CALIBRATE TEST 16 SWITCH

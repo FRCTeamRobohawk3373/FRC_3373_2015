@@ -254,6 +254,7 @@ public class SwerveControl  {
     	if(isFieldCentric || isRobotCentric){
     		calculateSwerveControl(LY, LX, RX);
     	} else if(isObjectCentric){
+    		setSpeedMode(0.5);
     		calculateObjectControl(RX);
     	} else{
     		calculateHookControl(RX);
@@ -465,6 +466,8 @@ public class SwerveControl  {
     	double translationalOffset = 0.0;
     	if(isFieldCentric){
     		translationalOffset = imu.getYaw();
+    	} else {
+    		translationalOffset = 0;
     	}
     	
     	//Same for all wheels so therefore we only do the transitional vector math once
@@ -553,19 +556,10 @@ public class SwerveControl  {
     	BLWheel.drive();
     }
     
-    public void setSpeedMode(String mode){
+    public void setSpeedMode(double newSpeedModifier){
     	for (SwerveWheel wheel : wheelArray){
-			switch (mode) {
-				case "turbo":
-					wheel.setSpeedModifier(1.0);
-				case "sniper":
-					wheel.setSpeedModifier(0.25);
-				case "normal":
-					wheel.setSpeedModifier(0.5);
-				default:
-					wheel.setSpeedModifier(0.5);
-			}
-    	}
+			wheel.setSpeedModifier(newSpeedModifier);
+		}
     }
 
     /**

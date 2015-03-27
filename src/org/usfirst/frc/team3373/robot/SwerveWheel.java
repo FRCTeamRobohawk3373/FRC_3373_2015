@@ -15,7 +15,7 @@ public class SwerveWheel {
 	private double speed;
 	private int targetAngle;
 	private int encoderUnitsPerRotation = 1660;//was 1665
-	private double speedModifier = 0.5;
+	private double speedModifier = 0.3;//This sets robot default speed to 75%, sniper and turbo mode changes these numbers
 	private int encoderAtHome = 0;
 	private int homeToZero = 0;
 	
