@@ -50,7 +50,7 @@ public class SwerveControl  {
     boolean isObjectCentric = false;
     boolean isHookCentric = false;
     
-    double radius = 40;
+    double radius = 55;
     
 	SwerveWheel[] wheelArray;
 

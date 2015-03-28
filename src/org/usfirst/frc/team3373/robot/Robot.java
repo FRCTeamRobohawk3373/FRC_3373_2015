@@ -299,7 +299,7 @@ public class Robot extends SampleRobot {
     			//Regular mode
     			swerve.setSpeedMode(0.3);
     		} 
-    		
+    		/*
             if(driver.isLStickPushed()){
             	swerve.switchToFieldCentric();
             }
@@ -310,6 +310,14 @@ public class Robot extends SampleRobot {
             	swerve.switchToHookCentric();
             }
             if(driver.isRStickPushed()){
+            	swerve.switchToRobotCentric();
+            }*/
+    		//This is using momentary switches for hook and tote centric
+    		if(driver.getRawAxis(Rtrigger) > 0.2){
+            	swerve.switchToObjectCentric();
+            } else if(driver.getRawAxis(Ltrigger) > 0.2){
+            	swerve.switchToHookCentric();
+            } else {
             	swerve.switchToRobotCentric();
             }
     		
