@@ -4,7 +4,7 @@ package org.usfirst.frc.team3373.robot;
 
 import com.kauailabs.nav6.frc.IMU; 
 import com.kauailabs.nav6.frc.IMUAdvanced;
-
+import java.lang.*;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -146,8 +146,27 @@ public class Robot extends SampleRobot {
      * Drive left & right motors for 2 seconds then stop
      */
     public void autonomous() {
+<<<<<<< HEAD
+    	
+    	if(!SwerveAlign.aligned()){
+    		SwerveAlign.align();
+    	}
+    	else if(SwerveAlign.aligned() && !isAligned){
+    		frontLeft.setEncPos(0);
+    		frontRight.setEncPos(0);
+    		backLeft.setEncPos(0);
+    		backRight.setEncPos(0);
+    		
+    		isAligned = true;
+    	}
+
+    	
+    	/* TODO CALIBRATE TEST 16 SWITCH
+    	int index = 17;//for testing purposes
+=======
     	// TODO CALIBRATE TEST 16 SWITCH
     	int index = 0;//for testing purposes
+>>>>>>> branch 'master' of https://github.com/peragore/TeamRobohawk2015.git
     	if(ones.get()){
     		index += 1;
     	}
@@ -320,8 +339,12 @@ public class Robot extends SampleRobot {
             } else {
             	swerve.switchToRobotCentric();
             }
+            swerve.move((driver.getRawAxis(LY) * -1), (driver.getRawAxis(LX)), driver.getRawAxis(RX));
     		
+<<<<<<< HEAD
+=======
     		swerve.move(-driver.getRawAxis(LY), driver.getRawAxis(LX), driver.getRawAxis(RX));
+>>>>>>> branch 'master' of https://github.com/peragore/TeamRobohawk2015.git
     		
     		
     		

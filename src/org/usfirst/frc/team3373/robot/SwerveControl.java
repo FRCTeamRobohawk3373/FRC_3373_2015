@@ -515,7 +515,7 @@ public class SwerveControl  {
     	FLWheel.setRSpeed(speedRatio);
     	FRWheel.setRSpeed(speedRatio);
     	*/
-    	double fastestSpeed = 0.0;
+    	double fastestSpeed = 1.0;
     	for (SwerveWheel wheel : wheelArray){
     		
     		double rotateXComponent = Math.cos(Math.toRadians(wheel.getRAngle())) * wheel.getRSpeed(); //calculates x component of rotation vector
